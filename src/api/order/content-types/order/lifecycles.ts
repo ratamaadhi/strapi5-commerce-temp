@@ -8,10 +8,9 @@ export default {
         populate: ['user', 'items'],
       }) as any;
 
-      const customerEmail =
-        order.user?.email || result.email || null;
+      const customerEmail = order.user?.email ?? null;
       if (!customerEmail) {
-        strapi.log.warn('Order confirmation skipped: no customer email');
+        strapi.log.warn('Order confirmation skipped: order has no associated user with email');
         return;
       }
 
