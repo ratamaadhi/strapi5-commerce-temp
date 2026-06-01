@@ -127,7 +127,9 @@ exports
 .strapi
 dist
 build
+src/extensions/documentation
 .strapi-updater.json
 .strapi-cloud.json
 
 docs/superpowers/
+.playwright-mcp/
