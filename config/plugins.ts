@@ -15,7 +15,10 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
           forcePathStyle: true,
           params: {
             Bucket: env('MINIO_BUCKET'),
-          },
+            // ACL key present but undefined prevents default public_read injection
+            // (required for modern MinIO which disables ACLs by default since 2023)
+            ACL: undefined,
+          } as any,
         },
       },
       actionOptions: {
