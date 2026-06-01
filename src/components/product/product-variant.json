@@ -1,0 +1,33 @@
+{
+  "collectionName": "components_product_product_variants",
+  "info": {
+    "displayName": "productVariant",
+    "icon": "store"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "sku": {
+      "type": "text",
+      "required": false,
+      "unique": true
+    },
+    "price": {
+      "type": "decimal",
+      "required": true,
+      "min": 0
+    },
+    "inventory": {
+      "type": "biginteger",
+      "default": "0",
+      "min": "0"
+    },
+    "attributes": {
+      "type": "json"
+    }
+  },
+  "config": {}
+}

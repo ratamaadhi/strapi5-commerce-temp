@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_product_specifications",
+  "info": {
+    "displayName": "specification",
+    "icon": "book"
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "text",
+      "required": true
+    },
+    "value": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "config": {}
+}

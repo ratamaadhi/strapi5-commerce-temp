@@ -1,0 +1,101 @@
+{
+  "kind": "collectionType",
+  "collectionName": "orders",
+  "info": {
+    "singularName": "order",
+    "pluralName": "orders",
+    "displayName": "order"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "orderNumber": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "orderStatus": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "processing",
+        "shipped",
+        "delivered",
+        "cancelled",
+        "refunded"
+      ]
+    },
+    "paymentStatus": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "paid",
+        "failed",
+        "refunded"
+      ]
+    },
+    "subtotal": {
+      "type": "decimal",
+      "required": true,
+      "default": 0
+    },
+    "tax": {
+      "type": "decimal",
+      "default": 0
+    },
+    "shippingCost": {
+      "type": "decimal",
+      "default": 0
+    },
+    "discount": {
+      "type": "decimal",
+      "default": 0
+    },
+    "totalAmount": {
+      "type": "decimal",
+      "default": 0
+    },
+    "currency": {
+      "type": "string",
+      "default": "IDR"
+    },
+    "notes": {
+      "type": "text"
+    },
+    "adminNotes": {
+      "type": "text"
+    },
+    "trackingNumber": {
+      "type": "string"
+    },
+    "shippedAt": {
+      "type": "datetime"
+    },
+    "deliveredAt": {
+      "type": "datetime"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "orders"
+    },
+    "items": {
+      "type": "component",
+      "component": "product.order-item",
+      "repeatable": true
+    },
+    "shippingAddress": {
+      "type": "component",
+      "component": "common.address",
+      "repeatable": false
+    },
+    "billingAddress": {
+      "type": "component",
+      "component": "common.address",
+      "repeatable": false
+    }
+  }
+}

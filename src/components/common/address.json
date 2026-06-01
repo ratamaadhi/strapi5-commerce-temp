@@ -1,0 +1,47 @@
+{
+  "collectionName": "components_common_addresses",
+  "info": {
+    "displayName": "address",
+    "icon": "house"
+  },
+  "options": {},
+  "attributes": {
+    "firstName": {
+      "type": "string",
+      "required": true
+    },
+    "lastName": {
+      "type": "string",
+      "required": true
+    },
+    "phone": {
+      "type": "string",
+      "required": true
+    },
+    "addressLine1": {
+      "type": "text",
+      "required": true
+    },
+    "addressLine2": {
+      "type": "text"
+    },
+    "city": {
+      "type": "string",
+      "required": true
+    },
+    "state": {
+      "type": "string",
+      "required": true
+    },
+    "postalCode": {
+      "type": "string",
+      "required": true
+    },
+    "country": {
+      "type": "string",
+      "default": "Indonesia",
+      "required": true
+    }
+  },
+  "config": {}
+}
