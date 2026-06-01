@@ -14,8 +14,6 @@ services:
     depends_on:
       strapiDB:
         condition: service_healthy
-    volumes:
-      - strapi-uploads:/opt/app/public/uploads
     networks:
       - strapi-network
 
@@ -38,7 +36,6 @@ services:
 
 volumes:
   strapi-db:
-  strapi-uploads:
 
 networks:
   strapi-network:
