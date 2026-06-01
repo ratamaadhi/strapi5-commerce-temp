@@ -28,6 +28,42 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
       },
     },
   },
+
+  documentation: {
+    enabled: true,
+    config: {
+      openapi: '3.0.0',
+      info: {
+        version: '1.0.0',
+        title: 'E-Commerce API',
+        description: 'REST API documentation for the Strapi 5 e-commerce backend',
+        contact: {
+          name: 'Dev Team',
+          email: 'dev@example.com',
+          url: 'https://example.com',
+        },
+        license: {
+          name: 'Apache 2.0',
+          url: 'https://www.apache.org/licenses/LICENSE-2.0.html',
+        },
+      },
+      'x-strapi-config': {
+        plugins: ['upload', 'users-permissions'],
+        path: '/documentation',
+      },
+      servers: [
+        {
+          url: 'http://localhost:1337/api',
+          description: 'Development server',
+        },
+      ],
+      externalDocs: {
+        description: 'Find out more about Strapi',
+        url: 'https://docs.strapi.io',
+      },
+      security: [{ bearerAuth: [] }],
+    },
+  },
 });
 
 export default config;
