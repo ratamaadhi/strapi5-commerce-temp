@@ -1,0 +1,82 @@
+{
+  "products": [
+    {
+      "name": "Kaos Polos Premium",
+      "slug": "kaos-polos-premium",
+      "shortDescription": "Kaos 100% katun combed premium",
+      "description": "## Kaos Polos Premium\n\nKaos berbahan katun combed 30s dengan jahitan rantai. Nyaman dipakai sehari-hari.\n\n### Detail:\n- Bahan: 100% Katun Combed 30s\n- Gramasi: 180 gsm\n- Tersedia dalam 5 warna",
+      "price": 150000,
+      "compareAtPrice": 200000,
+      "sku": "TSHIRT-BLK-001",
+      "barcode": "8991234567890",
+      "inventory": 100,
+      "lowStockThreshold": 10,
+      "weight": 0.3,
+      "featured": true,
+      "categories": ["pakaian", "pria"],
+      "variants": [
+        {
+          "name": "M - Hitam",
+          "sku": "TSHIRT-BLK-001-M",
+          "price": 150000,
+          "inventory": 30,
+          "attributes": { "color": "Hitam", "size": "M" }
+        },
+        {
+          "name": "L - Hitam",
+          "sku": "TSHIRT-BLK-001-L",
+          "price": 150000,
+          "inventory": 40,
+          "attributes": { "color": "Hitam", "size": "L" }
+        },
+        {
+          "name": "XL - Hitam",
+          "sku": "TSHIRT-BLK-001-XL",
+          "price": 160000,
+          "inventory": 30,
+          "attributes": { "color": "Hitam", "size": "XL" }
+        }
+      ],
+      "specifications": [
+        { "label": "Bahan", "value": "100% Katun Combed 30s" },
+        { "label": "Gramasi", "value": "180 gsm" },
+        { "label": "Jahitan", "value": "Rantai" }
+      ]
+    },
+    {
+      "name": "Celana Chino Slim Fit",
+      "slug": "celana-chino-slim-fit",
+      "shortDescription": "Celana chino slim fit premium",
+      "description": "## Celana Chino Slim Fit\n\nCelana chino dengan potongan slim fit, bahan stretch nyaman.",
+      "price": 250000,
+      "compareAtPrice": 300000,
+      "sku": "PANTS-CHN-001",
+      "barcode": "8991234567891",
+      "inventory": 55,
+      "lowStockThreshold": 8,
+      "weight": 0.5,
+      "featured": false,
+      "categories": ["pakaian", "pria"],
+      "variants": [
+        {
+          "name": "30 - Navy",
+          "sku": "PANTS-CHN-001-30-NV",
+          "price": 250000,
+          "inventory": 25,
+          "attributes": { "color": "Navy", "size": "30" }
+        },
+        {
+          "name": "32 - Navy",
+          "sku": "PANTS-CHN-001-32-NV",
+          "price": 250000,
+          "inventory": 30,
+          "attributes": { "color": "Navy", "size": "32" }
+        }
+      ],
+      "specifications": [
+        { "label": "Bahan", "value": "Cotton Stretch" },
+        { "label": "Model", "value": "Slim Fit" }
+      ]
+    }
+  ]
+}
