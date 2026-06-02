@@ -1,20 +1,17 @@
-// import type { Core } from '@strapi/strapi';
+import type { Core } from '@strapi/strapi';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 export default {
-  /**
-   * An asynchronous register function that runs before
-   * your application is initialized.
-   *
-   * This gives you an opportunity to extend code.
-   */
   register(/* { strapi }: { strapi: Core.Strapi } */) {},
 
-  /**
-   * An asynchronous bootstrap function that runs before
-   * your application gets started.
-   *
-   * This gives you an opportunity to set up your data model,
-   * run jobs, or perform some special logic.
-   */
-  bootstrap(/* { strapi }: { strapi: Core.Strapi } */) {},
+  async bootstrap({ strapi }: { strapi: Core.Strapi }) {
+    for (const dir of [strapi.dirs.app.extensions, strapi.dirs.dist.extensions]) {
+      try {
+        fs.mkdirSync(path.join(dir, 'documentation', 'documentation'), { recursive: true });
+      } catch {
+        // Non-fatal: documentation plugin handles missing dirs gracefully
+      }
+    }
+  },
 };
