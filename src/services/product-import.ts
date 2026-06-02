@@ -127,19 +127,16 @@ export class ProductImportService {
   }
 
   private async createCategory(name: string, publish: boolean): Promise<{ documentId: string }> {
-    const data: Record<string, unknown> = {
-      name,
-      slug: name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, ''),
-    };
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .replace(/-+/g, '-');
 
-    if (publish) {
-      data.publishedAt = new Date().toISOString();
-    }
-
-    return this.strapi.documents('api::category.category').create(data);
+    return this.strapi.documents('api::category.category').create({
+      data: { name, slug },
+      status: publish ? 'published' : 'draft',
+    });
   }
 
   private async resolveCategories(
@@ -158,9 +155,14 @@ export class ProductImportService {
       if (existing) {
         resolved.push({ documentId: existing.documentId });
       } else if (options.createCategories) {
-        const created = await this.createCategory(name, !!options.publish);
-        resolved.push({ documentId: created.documentId });
-        console.log(`  [INFO] Auto-created category: "${name}"`);
+        if (options.dryRun) {
+          resolved.push({ documentId: 'dry-run' });
+          console.log(`  [INFO] Would auto-create category: "${name}"`);
+        } else {
+          const created = await this.createCategory(name, !!options.publish);
+          resolved.push({ documentId: created.documentId });
+          console.log(`  [INFO] Auto-created category: "${name}"`);
+        }
       } else {
         return `Category "${name}" not found (use --create-categories to auto-create)`;
       }
@@ -170,26 +172,26 @@ export class ProductImportService {
   }
 
   private buildProductBody(product: ProductInput, categoryIds: { documentId: string }[], options: ImportOptions) {
-    const body: Record<string, unknown> = {
+    const data: Record<string, unknown> = {
       name: product.name,
       price: product.price,
       sku: product.sku,
     };
 
-    if (product.slug) body.slug = product.slug;
-    if (product.shortDescription !== undefined) body.shortDescription = product.shortDescription;
-    if (product.description !== undefined) body.description = product.description;
-    if (product.compareAtPrice !== undefined) body.compareAtPrice = product.compareAtPrice;
-    if (product.barcode !== undefined) body.barcode = product.barcode;
-    if (product.inventory !== undefined) body.inventory = product.inventory;
-    if (product.lowStockThreshold !== undefined) body.lowStockThreshold = product.lowStockThreshold;
-    if (product.weight !== undefined) body.weight = product.weight;
-    if (product.featured !== undefined) body.featured = product.featured;
+    if (product.slug) data.slug = product.slug;
+    if (product.shortDescription !== undefined) data.shortDescription = product.shortDescription;
+    if (product.description !== undefined) data.description = product.description;
+    if (product.compareAtPrice !== undefined) data.compareAtPrice = product.compareAtPrice;
+    if (product.barcode !== undefined) data.barcode = product.barcode;
+    if (product.inventory !== undefined) data.inventory = product.inventory;
+    if (product.lowStockThreshold !== undefined) data.lowStockThreshold = product.lowStockThreshold;
+    if (product.weight !== undefined) data.weight = product.weight;
+    if (product.featured !== undefined) data.featured = product.featured;
 
-    body.categories = categoryIds;
+    data.categories = categoryIds;
 
     if (product.variants && product.variants.length > 0) {
-      body.variants = product.variants.map((v) => ({
+      data.variants = product.variants.map((v) => ({
         name: v.name,
         sku: v.sku,
         price: v.price,
@@ -199,17 +201,16 @@ export class ProductImportService {
     }
 
     if (product.specifications && product.specifications.length > 0) {
-      body.specifications = product.specifications.map((s) => ({
+      data.specifications = product.specifications.map((s) => ({
         label: s.label,
         value: s.value,
       }));
     }
 
-    if (options.publish) {
-      body.publishedAt = new Date().toISOString();
-    }
-
-    return body;
+    return {
+      data,
+      status: options.publish ? 'published' : 'draft',
+    };
   }
 
   async importProducts(filePath: string, options: ImportOptions = {}): Promise<ImportSummary> {
