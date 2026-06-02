@@ -9,8 +9,17 @@ export default {
     for (const dir of [strapi.dirs.app.extensions, strapi.dirs.dist.extensions]) {
       try {
         fs.mkdirSync(path.join(dir, 'documentation', 'documentation'), { recursive: true });
+        fs.mkdirSync(path.join(dir, 'documentation', 'public'), { recursive: true });
       } catch {
-        // Non-fatal: documentation plugin handles missing dirs gracefully
+        // Non-fatal
+      }
+    }
+
+    if (strapi.plugin('documentation')) {
+      try {
+        await strapi.plugin('documentation').service('documentation').generateFullDoc();
+      } catch {
+        // Non-fatal
       }
     }
   },
