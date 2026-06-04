@@ -209,7 +209,7 @@ export class ProductImportService {
 
     return {
       data,
-      status: options.publish ? 'published' : 'draft',
+      status: (options.publish ? 'published' : 'draft') as 'published' | 'draft',
     };
   }
 
@@ -253,7 +253,7 @@ export class ProductImportService {
             console.log(`  [DRY-RUN] ${product.name} (${product.sku}): would upsert`);
           } else {
             const body = this.buildProductBody(product, categoryResult, options);
-            await this.strapi.documents('api::product.product').update(existing.documentId, body);
+            await this.strapi.documents('api::product.product').update({ documentId: existing.documentId, ...body } as any);
             results.push({ name: product.name, sku: product.sku, status: 'success' });
             console.log(`  [UPSERT] ${product.name} (${product.sku})`);
           }
@@ -284,7 +284,7 @@ export class ProductImportService {
 
       try {
         const body = this.buildProductBody(product, categoryResult, options);
-        await this.strapi.documents('api::product.product').create(body);
+        await this.strapi.documents('api::product.product').create(body as any);
         results.push({ name: product.name, sku: product.sku, status: 'success' });
         console.log(`  [OK] ${product.name} (${product.sku})`);
       } catch (err) {

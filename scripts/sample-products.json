@@ -77,6 +77,135 @@
         { "label": "Bahan", "value": "Cotton Stretch" },
         { "label": "Model", "value": "Slim Fit" }
       ]
+    },
+    {
+      "name": "Jaket Bomber Hoodie",
+      "slug": "jaket-bomber-hoodie",
+      "shortDescription": "Jaket bomber berbahan fleece tebal dan hangat",
+      "description": "## Jaket Bomber Hoodie\n\nJaket bomber dengan bahan fleece anti-pilling, hoodie adjustable, dan saku depan. Cocok untuk cuaca dingin.\n\n### Detail:\n- Bahan: Flece Anti-Pilling\n- Gramasi: 280 gsm\n- Hoodie dengan tali adjustable\n- Saku depan kargo",
+      "price": 350000,
+      "compareAtPrice": 450000,
+      "sku": "JKTBMBR-001",
+      "barcode": "8991234567892",
+      "inventory": 40,
+      "lowStockThreshold": 5,
+      "weight": 0.7,
+      "featured": true,
+      "categories": ["pakaian", "pria", "wanita"],
+      "variants": [
+        {
+          "name": "M - Army Green",
+          "sku": "JKTBMBR-001-M-AG",
+          "price": 350000,
+          "inventory": 15,
+          "attributes": { "color": "Army Green", "size": "M" }
+        },
+        {
+          "name": "L - Army Green",
+          "sku": "JKTBMBR-001-L-AG",
+          "price": 350000,
+          "inventory": 15,
+          "attributes": { "color": "Army Green", "size": "L" }
+        },
+        {
+          "name": "XL - Army Green",
+          "sku": "JKTBMBR-001-XL-AG",
+          "price": 350000,
+          "inventory": 10,
+          "attributes": { "color": "Army Green", "size": "XL" }
+        }
+      ],
+      "specifications": [
+        { "label": "Bahan", "value": "Flece Anti-Pilling" },
+        { "label": "Gramasi", "value": "280 gsm" },
+        { "label": "Kerah", "value": "Hoodie Adjustable" }
+      ]
+    },
+    {
+      "name": "Sepatu Sneakers Urban",
+      "slug": "sepatu-sneakers-urban",
+      "shortDescription": "Sneakers urban casual dengan sol kanvas",
+      "description": "## Sepatu Sneakers Urban\n\nSneakers gaya urban dengan bahan kanvas premium dan sol karet anti-slip. Nyaman untuk aktivitas harian.\n\n### Detail:\n- Upper: Kanvas Premium\n- Sol: Karet Anti-Slip\n- Insole: Busa Memory Foam\n- Tersedia dalam 3 warna",
+      "price": 275000,
+      "compareAtPrice": 0,
+      "sku": "SNKRS-URB-001",
+      "barcode": "8991234567893",
+      "inventory": 65,
+      "lowStockThreshold": 10,
+      "weight": 0.6,
+      "featured": false,
+      "categories": ["sepatu", "pria", "wanita"],
+      "variants": [
+        {
+          "name": "40 - Putih",
+          "sku": "SNKRS-URB-001-40-PTH",
+          "price": 275000,
+          "inventory": 20,
+          "attributes": { "color": "Putih", "size": "40" }
+        },
+        {
+          "name": "41 - Putih",
+          "sku": "SNKRS-URB-001-41-PTH",
+          "price": 275000,
+          "inventory": 25,
+          "attributes": { "color": "Putih", "size": "41" }
+        },
+        {
+          "name": "42 - Putih",
+          "sku": "SNKRS-URB-001-42-PTH",
+          "price": 275000,
+          "inventory": 20,
+          "attributes": { "color": "Putih", "size": "42" }
+        }
+      ],
+      "specifications": [
+        { "label": "Upper", "value": "Kanvas Premium" },
+        { "label": "Sol", "value": "Karet Anti-Slip" },
+        { "label": "Insole", "value": "Memory Foam" }
+      ]
+    },
+    {
+      "name": "Topi Baseball Embroidered",
+      "slug": "topi-baseball-embroidered",
+      "shortDescription": "Topi baseball dengan bordir logo depan",
+      "description": "## Topi Baseball Embroidered\n\nTopi baseball classic dengan bordir logo premium, adjustable strap di belakang. Cocok untuk santai.\n\n### Detail:\n- Bahan: Cotton Twill\n- Bordir logo depan\n- Adjustable strap belakang\n- Satu ukuran untuk semua",
+      "price": 85000,
+      "compareAtPrice": 120000,
+      "sku": "HAT-BASE-001",
+      "barcode": "8991234567894",
+      "inventory": 120,
+      "lowStockThreshold": 20,
+      "weight": 0.1,
+      "featured": false,
+      "categories": ["aksesoris", "pria", "wanita"],
+      "variants": [
+        {
+          "name": "Hitam",
+          "sku": "HAT-BASE-001-BLK",
+          "price": 85000,
+          "inventory": 50,
+          "attributes": { "color": "Hitam" }
+        },
+        {
+          "name": "Navy",
+          "sku": "HAT-BASE-001-NVY",
+          "price": 85000,
+          "inventory": 40,
+          "attributes": { "color": "Navy" }
+        },
+        {
+          "name": "Cream",
+          "sku": "HAT-BASE-001-CRM",
+          "price": 85000,
+          "inventory": 30,
+          "attributes": { "color": "Cream" }
+        }
+      ],
+      "specifications": [
+        { "label": "Bahan", "value": "Cotton Twill" },
+        { "label": "Bordir", "value": "Logo Depan" },
+        { "label": "Tali", "value": "Adjustable Strap" }
+      ]
     }
   ]
 }
