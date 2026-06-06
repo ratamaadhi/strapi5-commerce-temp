@@ -9,6 +9,13 @@ interface ImportOptions {
   publish?: boolean;
 }
 
+interface Dimensions {
+  length: number;
+  width: number;
+  height: number;
+  weight: number;
+}
+
 interface ProductInput {
   name: string;
   slug?: string;
@@ -20,7 +27,7 @@ interface ProductInput {
   barcode?: string;
   inventory?: number;
   lowStockThreshold?: number;
-  weight?: number;
+  dimensions: Dimensions;
   featured?: boolean;
   categories?: string[];
   variants?: Array<{
@@ -28,6 +35,7 @@ interface ProductInput {
     sku: string;
     price: number;
     inventory?: number;
+    dimensions?: Dimensions;
     attributes?: Record<string, unknown>;
   }>;
   specifications?: Array<{
@@ -89,6 +97,24 @@ export class ProductImportService {
     return data as ProductsJSON;
   }
 
+  private validateDimensions(dims: Dimensions, prefix: string): string | null {
+    const fields: [string, keyof Dimensions][] = [
+      ['length', 'length'],
+      ['width', 'width'],
+      ['height', 'height'],
+      ['weight', 'weight'],
+    ];
+
+    for (const [label, key] of fields) {
+      const val = dims[key];
+      if (val === undefined || val === null || typeof val !== 'number' || val <= 0) {
+        return `${prefix}: dimensions.${label} must be > 0`;
+      }
+    }
+
+    return null;
+  }
+
   private validateProduct(product: ProductInput): string | null {
     if (!product.name || typeof product.name !== 'string' || product.name.trim().length === 0) {
       return 'Missing required field: name';
@@ -100,11 +126,22 @@ export class ProductImportService {
       return 'Missing required field: sku';
     }
 
+    if (product.dimensions === undefined || product.dimensions === null) {
+      return 'Missing required field: dimensions';
+    }
+
+    const dimErr = this.validateDimensions(product.dimensions, 'Product');
+    if (dimErr) return dimErr;
+
     if (product.variants && Array.isArray(product.variants)) {
       for (let i = 0; i < product.variants.length; i++) {
         const v = product.variants[i];
         if (!v.name || !v.sku || v.price === undefined || v.price === null || typeof v.price !== 'number' || v.price < 0) {
           return `Variant #${i + 1}: missing required field (name, sku, price >= 0)`;
+        }
+        if (v.dimensions) {
+          const vDimErr = this.validateDimensions(v.dimensions, `Variant#${i + 1}`);
+          if (vDimErr) return vDimErr;
         }
       }
     }
@@ -185,19 +222,23 @@ export class ProductImportService {
     if (product.barcode !== undefined) data.barcode = product.barcode;
     if (product.inventory !== undefined) data.inventory = product.inventory;
     if (product.lowStockThreshold !== undefined) data.lowStockThreshold = product.lowStockThreshold;
-    if (product.weight !== undefined) data.weight = product.weight;
+    if (product.dimensions !== undefined) data.dimensions = product.dimensions;
     if (product.featured !== undefined) data.featured = product.featured;
 
     data.categories = categoryIds;
 
     if (product.variants && product.variants.length > 0) {
-      data.variants = product.variants.map((v) => ({
-        name: v.name,
-        sku: v.sku,
-        price: v.price,
-        inventory: v.inventory ?? 0,
-        attributes: v.attributes ?? {},
-      }));
+      data.variants = product.variants.map((v) => {
+        const variantData: Record<string, unknown> = {
+          name: v.name,
+          sku: v.sku,
+          price: v.price,
+          inventory: v.inventory ?? 0,
+          attributes: v.attributes ?? {},
+        };
+        if (v.dimensions) variantData.dimensions = v.dimensions;
+        return variantData;
+      });
     }
 
     if (product.specifications && product.specifications.length > 0) {

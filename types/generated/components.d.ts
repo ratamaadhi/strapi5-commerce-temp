@@ -40,6 +40,52 @@ export interface ProductCartItem extends Struct.ComponentSchema {
   };
 }
 
+export interface ProductDimensions extends Struct.ComponentSchema {
+  collectionName: 'components_product_dimensions';
+  info: {
+    displayName: 'dimensions';
+    icon: 'expand';
+  };
+  attributes: {
+    height: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    length: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    weight: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    width: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+  };
+}
+
 export interface ProductOrderItem extends Struct.ComponentSchema {
   collectionName: 'components_product_order_items';
   info: {
@@ -71,6 +117,7 @@ export interface ProductProductVariant extends Struct.ComponentSchema {
   };
   attributes: {
     attributes: Schema.Attribute.JSON;
+    dimensions: Schema.Attribute.Component<'product.dimensions', false>;
     inventory: Schema.Attribute.BigInteger &
       Schema.Attribute.SetMinMax<
         {
@@ -109,6 +156,7 @@ declare module '@strapi/strapi' {
     export interface ComponentSchemas {
       'common.address': CommonAddress;
       'product.cart-item': ProductCartItem;
+      'product.dimensions': ProductDimensions;
       'product.order-item': ProductOrderItem;
       'product.product-variant': ProductProductVariant;
       'product.specification': ProductSpecification;

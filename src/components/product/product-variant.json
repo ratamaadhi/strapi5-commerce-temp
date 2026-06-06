@@ -27,6 +27,11 @@
     },
     "attributes": {
       "type": "json"
+    },
+    "dimensions": {
+      "type": "component",
+      "component": "product.dimensions",
+      "repeatable": false
     }
   },
   "config": {}

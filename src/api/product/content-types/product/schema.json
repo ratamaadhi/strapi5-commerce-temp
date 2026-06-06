@@ -49,10 +49,6 @@
       "type": "integer",
       "default": 10
     },
-    "weight": {
-      "type": "decimal",
-      "min": 0
-    },
     "images": {
       "type": "media",
       "multiple": true,
@@ -88,6 +84,12 @@
       "type": "component",
       "component": "product.specification",
       "repeatable": true
+    },
+    "dimensions": {
+      "type": "component",
+      "component": "product.dimensions",
+      "repeatable": false,
+      "required": true
     }
   }
 }
