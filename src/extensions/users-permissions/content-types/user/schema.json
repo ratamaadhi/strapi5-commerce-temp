@@ -77,12 +77,6 @@
       "relation": "oneToMany",
       "target": "api::review.review",
       "mappedBy": "user"
-    },
-    "carts": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::cart.cart",
-      "mappedBy": "users_permissions_user"
     }
   }
 }

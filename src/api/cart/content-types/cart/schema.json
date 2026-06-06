@@ -18,16 +18,15 @@
     "expiresAt": {
       "type": "datetime"
     },
-    "users_permissions_user": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "carts"
-    },
     "items": {
       "type": "component",
       "component": "product.cart-item",
       "repeatable": true
+    },
+    "userDocumentId": {
+      "type": "string",
+      "default": "userDocumentId",
+      "unique": true
     }
   }
 }
