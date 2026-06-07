@@ -25,7 +25,6 @@
     },
     "userDocumentId": {
       "type": "string",
-      "default": "userDocumentId",
       "unique": true
     }
   }

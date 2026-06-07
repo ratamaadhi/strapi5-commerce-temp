@@ -464,9 +464,7 @@ export interface ApiCartCart extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    userDocumentId: Schema.Attribute.String &
-      Schema.Attribute.Unique &
-      Schema.Attribute.DefaultTo<'userDocumentId'>;
+    userDocumentId: Schema.Attribute.String & Schema.Attribute.Unique;
   };
 }
 

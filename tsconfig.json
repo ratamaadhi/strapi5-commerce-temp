@@ -39,6 +39,8 @@
     // Do not include test files
     "**/*.test.*",
     // Do not include plugins in the server compilation
-    "src/plugins/**"
+    "src/plugins/**",
+    // Standalone scripts (run via tsx, not part of Strapi build)
+    "scripts/"
   ]
 }

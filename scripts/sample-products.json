@@ -1,222 +1,305 @@
 {
   "products": [
     {
-      "name": "Kaos Polos Premium",
-      "slug": "kaos-polos-premium",
-      "shortDescription": "Kaos 100% katun combed premium",
-      "description": "## Kaos Polos Premium\n\nKaos berbahan katun combed 30s dengan jahitan rantai. Nyaman dipakai sehari-hari.\n\n### Detail:\n- Bahan: 100% Katun Combed 30s\n- Gramasi: 180 gsm\n- Tersedia dalam 5 warna",
-      "price": 150000,
-      "compareAtPrice": 200000,
-      "sku": "TSHIRT-BLK-001",
+      "name": "Blouse Zara Oversized - Preloved",
+      "slug": "blouse-zara-oversized-preloved",
+      "shortDescription": "Blouse Zara oversized, dipakai 2x aja mulus",
+      "description": "## Blouse Zara Oversized — Preloved\n\nBlouse Zara favorit, cuma dipakai 2x untuk konten. Masih mulus banget, no minus.\n\n### Detail:\n- Brand: Zara\n- Bahan: Rayon blend, adem\n- Kondisi: 9.5/10 (baru dipakai 2x)\n- Alasan jual: kebesaran, lebih suka yang fit\n\n### Size Reference:\n- Berat: 250g\n- Panjang: 68cm\n- Lebar dada: 56cm (lingkar 112cm)",
+      "price": 125000,
+      "compareAtPrice": 399000,
+      "sku": "ZRA-BLS-001",
       "barcode": "8991234567890",
-      "inventory": 100,
-      "lowStockThreshold": 10,
-      "dimensions": { "length": 25, "width": 20, "height": 3, "weight": 300 },
+      "inventory": 1,
+      "lowStockThreshold": 1,
+      "dimensions": { "length": 30, "width": 25, "height": 3, "weight": 250 },
       "featured": true,
-      "categories": ["pakaian", "pria"],
+      "categories": ["preloved", "wanita", "atasan"],
       "variants": [
         {
-          "name": "M - Hitam",
-          "sku": "TSHIRT-BLK-001-M",
-          "price": 150000,
-          "inventory": 30,
-          "dimensions": { "length": 24, "width": 18, "height": 3, "weight": 280 },
-          "attributes": { "color": "Hitam", "size": "M" }
-        },
-        {
-          "name": "L - Hitam",
-          "sku": "TSHIRT-BLK-001-L",
-          "price": 150000,
-          "inventory": 40,
-          "dimensions": { "length": 26, "width": 20, "height": 3, "weight": 310 },
-          "attributes": { "color": "Hitam", "size": "L" }
-        },
-        {
-          "name": "XL - Hitam",
-          "sku": "TSHIRT-BLK-001-XL",
-          "price": 160000,
-          "inventory": 30,
-          "dimensions": { "length": 28, "width": 22, "height": 4, "weight": 350 },
-          "attributes": { "color": "Hitam", "size": "XL" }
+          "name": "S - Cream (fits M)",
+          "sku": "ZRA-BLS-001-S",
+          "price": 125000,
+          "inventory": 1,
+          "dimensions": {
+            "length": 30,
+            "width": 25,
+            "height": 3,
+            "weight": 250
+          },
+          "attributes": { "color": "Cream", "size": "S (fits M)" }
         }
       ],
       "specifications": [
-        { "label": "Bahan", "value": "100% Katun Combed 30s" },
-        { "label": "Gramasi", "value": "180 gsm" },
-        { "label": "Jahitan", "value": "Rantai" }
+        { "label": "Brand", "value": "Zara" },
+        { "label": "Kondisi", "value": "9.5/10" },
+        { "label": "Alasan Jual", "value": "Kebesaran" }
       ]
     },
     {
-      "name": "Celana Chino Slim Fit",
-      "slug": "celana-chino-slim-fit",
-      "shortDescription": "Celana chino slim fit premium",
-      "description": "## Celana Chino Slim Fit\n\nCelana chino dengan potongan slim fit, bahan stretch nyaman.",
-      "price": 250000,
-      "compareAtPrice": 300000,
-      "sku": "PANTS-CHN-001",
-      "barcode": "8991234567891",
-      "inventory": 55,
-      "lowStockThreshold": 8,
-      "dimensions": { "length": 35, "width": 25, "height": 5, "weight": 500 },
-      "featured": false,
-      "categories": ["pakaian", "pria"],
-      "variants": [
-        {
-          "name": "30 - Navy",
-          "sku": "PANTS-CHN-001-30-NV",
-          "price": 250000,
-          "inventory": 25,
-          "dimensions": { "length": 33, "width": 24, "height": 5, "weight": 480 },
-          "attributes": { "color": "Navy", "size": "30" }
-        },
-        {
-          "name": "32 - Navy",
-          "sku": "PANTS-CHN-001-32-NV",
-          "price": 250000,
-          "inventory": 30,
-          "dimensions": { "length": 35, "width": 26, "height": 5, "weight": 520 },
-          "attributes": { "color": "Navy", "size": "32" }
-        }
-      ],
-      "specifications": [
-        { "label": "Bahan", "value": "Cotton Stretch" },
-        { "label": "Model", "value": "Slim Fit" }
-      ]
-    },
-    {
-      "name": "Jaket Bomber Hoodie",
-      "slug": "jaket-bomber-hoodie",
-      "shortDescription": "Jaket bomber berbahan fleece tebal dan hangat",
-      "description": "## Jaket Bomber Hoodie\n\nJaket bomber dengan bahan fleece anti-pilling, hoodie adjustable, dan saku depan. Cocok untuk cuaca dingin.\n\n### Detail:\n- Bahan: Flece Anti-Pilling\n- Gramasi: 280 gsm\n- Hoodie dengan tali adjustable\n- Saku depan kargo",
-      "price": 350000,
-      "compareAtPrice": 450000,
-      "sku": "JKTBMBR-001",
-      "barcode": "8991234567892",
-      "inventory": 40,
-      "lowStockThreshold": 5,
-      "dimensions": { "length": 40, "width": 35, "height": 10, "weight": 700 },
-      "featured": true,
-      "categories": ["pakaian", "pria", "wanita"],
-      "variants": [
-        {
-          "name": "M - Army Green",
-          "sku": "JKTBMBR-001-M-AG",
-          "price": 350000,
-          "inventory": 15,
-          "dimensions": { "length": 38, "width": 34, "height": 9, "weight": 650 },
-          "attributes": { "color": "Army Green", "size": "M" }
-        },
-        {
-          "name": "L - Army Green",
-          "sku": "JKTBMBR-001-L-AG",
-          "price": 350000,
-          "inventory": 15,
-          "dimensions": { "length": 41, "width": 36, "height": 10, "weight": 720 },
-          "attributes": { "color": "Army Green", "size": "L" }
-        },
-        {
-          "name": "XL - Army Green",
-          "sku": "JKTBMBR-001-XL-AG",
-          "price": 350000,
-          "inventory": 10,
-          "dimensions": { "length": 44, "width": 38, "height": 11, "weight": 800 },
-          "attributes": { "color": "Army Green", "size": "XL" }
-        }
-      ],
-      "specifications": [
-        { "label": "Bahan", "value": "Flece Anti-Pilling" },
-        { "label": "Gramasi", "value": "280 gsm" },
-        { "label": "Kerah", "value": "Hoodie Adjustable" }
-      ]
-    },
-    {
-      "name": "Sepatu Sneakers Urban",
-      "slug": "sepatu-sneakers-urban",
-      "shortDescription": "Sneakers urban casual dengan sol kanvas",
-      "description": "## Sepatu Sneakers Urban\n\nSneakers gaya urban dengan bahan kanvas premium dan sol karet anti-slip. Nyaman untuk aktivitas harian.\n\n### Detail:\n- Upper: Kanvas Premium\n- Sol: Karet Anti-Slip\n- Insole: Busa Memory Foam\n- Tersedia dalam 3 warna",
-      "price": 275000,
-      "compareAtPrice": 0,
-      "sku": "SNKRS-URB-001",
-      "barcode": "8991234567893",
-      "inventory": 65,
-      "lowStockThreshold": 10,
-      "dimensions": { "length": 32, "width": 20, "height": 12, "weight": 600 },
-      "featured": false,
-      "categories": ["sepatu", "pria", "wanita"],
-      "variants": [
-        {
-          "name": "40 - Putih",
-          "sku": "SNKRS-URB-001-40-PTH",
-          "price": 275000,
-          "inventory": 20,
-          "dimensions": { "length": 30, "width": 19, "height": 11, "weight": 550 },
-          "attributes": { "color": "Putih", "size": "40" }
-        },
-        {
-          "name": "41 - Putih",
-          "sku": "SNKRS-URB-001-41-PTH",
-          "price": 275000,
-          "inventory": 25,
-          "dimensions": { "length": 32, "width": 20, "height": 12, "weight": 600 },
-          "attributes": { "color": "Putih", "size": "41" }
-        },
-        {
-          "name": "42 - Putih",
-          "sku": "SNKRS-URB-001-42-PTH",
-          "price": 275000,
-          "inventory": 20,
-          "dimensions": { "length": 34, "width": 21, "height": 13, "weight": 650 },
-          "attributes": { "color": "Putih", "size": "42" }
-        }
-      ],
-      "specifications": [
-        { "label": "Upper", "value": "Kanvas Premium" },
-        { "label": "Sol", "value": "Karet Anti-Slip" },
-        { "label": "Insole", "value": "Memory Foam" }
-      ]
-    },
-    {
-      "name": "Topi Baseball Embroidered",
-      "slug": "topi-baseball-embroidered",
-      "shortDescription": "Topi baseball dengan bordir logo depan",
-      "description": "## Topi Baseball Embroidered\n\nTopi baseball classic dengan bordir logo premium, adjustable strap di belakang. Cocok untuk santai.\n\n### Detail:\n- Bahan: Cotton Twill\n- Bordir logo depan\n- Adjustable strap belakang\n- Satu ukuran untuk semua",
+      "name": "Culottes H&M Trend - Preloved",
+      "slug": "culottes-hm-trend-preloved",
+      "shortDescription": "Culottes H&M high-waist, model kece",
+      "description": "## Culottes H&M Trend — Preloved\n\nCelana kulot high-waist dari H&M, modelnya lagi trend. Cocok buat hangout atau acara santai.\n\n### Detail:\n- Brand: H&M\n- Bahan: Linen blend\n- Kondisi: 8.5/10 (minus di kancing kecil, udah dijahit rapi)\n- Alasan jual: jarang dipake, lebih sering pake jeans",
       "price": 85000,
-      "compareAtPrice": 120000,
-      "sku": "HAT-BASE-001",
-      "barcode": "8991234567894",
-      "inventory": 120,
-      "lowStockThreshold": 20,
-      "dimensions": { "length": 20, "width": 20, "height": 10, "weight": 100 },
+      "compareAtPrice": 299000,
+      "sku": "HNM-CLT-001",
+      "barcode": "8991234567891",
+      "inventory": 1,
+      "lowStockThreshold": 1,
+      "dimensions": { "length": 40, "width": 30, "height": 5, "weight": 350 },
       "featured": false,
-
-      "categories": ["aksesoris", "pria", "wanita"],
+      "categories": ["preloved", "wanita", "bawahan"],
       "variants": [
         {
-          "name": "Hitam",
-          "sku": "HAT-BASE-001-BLK",
+          "name": "M - Navy",
+          "sku": "HNM-CLT-001-M",
           "price": 85000,
-          "inventory": 50,
-          "attributes": { "color": "Hitam" }
-        },
-        {
-          "name": "Navy",
-          "sku": "HAT-BASE-001-NVY",
-          "price": 85000,
-          "inventory": 40,
-          "attributes": { "color": "Navy" }
-        },
-        {
-          "name": "Cream",
-          "sku": "HAT-BASE-001-CRM",
-          "price": 85000,
-          "inventory": 30,
-          "attributes": { "color": "Cream" }
+          "inventory": 1,
+          "dimensions": {
+            "length": 40,
+            "width": 30,
+            "height": 5,
+            "weight": 350
+          },
+          "attributes": { "color": "Navy", "size": "M" }
         }
       ],
       "specifications": [
-        { "label": "Bahan", "value": "Cotton Twill" },
-        { "label": "Bordir", "value": "Logo Depan" },
-        { "label": "Tali", "value": "Adjustable Strap" }
+        { "label": "Brand", "value": "H&M" },
+        { "label": "Kondisi", "value": "8.5/10" },
+        { "label": "Alasan Jual", "value": "Jarang dipakai" }
+      ]
+    },
+    {
+      "name": "Cardigan Pull&Bear Knit - Preloved",
+      "slug": "cardigan-pullbear-knit-preloved",
+      "shortDescription": "Cardigan rajut Pull&Bear, vintage vibe",
+      "description": "## Cardigan Pull&Bear Knit — Preloved\n\nCardigan rajut dari Pull&Bear, model vintage aesthetic. Cocok dipakai layer-an.\n\n### Detail:\n- Brand: Pull&Bear\n- Bahan: Acrylic blend knit\n- Kondisi: 9/10 (mulus, ngg ada pililng)\n- Alasan jual: udah punya warna lain yang lebih disuka",
+      "price": 110000,
+      "compareAtPrice": 329000,
+      "sku": "PNB-CRD-001",
+      "barcode": "8991234567892",
+      "inventory": 1,
+      "lowStockThreshold": 1,
+      "dimensions": { "length": 45, "width": 40, "height": 5, "weight": 400 },
+      "featured": true,
+      "categories": ["preloved", "wanita", "outerwear"],
+      "variants": [
+        {
+          "name": "Free Size - Cream Beige",
+          "sku": "PNB-CRD-001-FS",
+          "price": 110000,
+          "inventory": 1,
+          "dimensions": {
+            "length": 45,
+            "width": 40,
+            "height": 5,
+            "weight": 400
+          },
+          "attributes": { "color": "Cream Beige", "size": "Free Size" }
+        }
+      ],
+      "specifications": [
+        { "label": "Brand", "value": "Pull&Bear" },
+        { "label": "Kondisi", "value": "9/10" },
+        { "label": "Alasan Jual", "value": "Duplikat warna" }
+      ]
+    },
+    {
+      "name": "Converse Chuck Taylor High - Preloved",
+      "slug": "converse-chuck-taylor-high-preloved",
+      "shortDescription": "Converse Chuck Taylor high, preloved tipis",
+      "description": "## Converse Chuck Taylor High — Preloved\n\nConverse Chuck Taylor high klasik. Ngga pernah gagal buat outfit apapun.\n\n### Detail:\n- Brand: Converse\n- Bahan: Kanvas original\n- Kondisi: 7.5/10 (sol luar agak aus, tapi masih nyaman banget)\n- Alasan jual: kebesaran size, mau cari yang lebih pas",
+      "price": 175000,
+      "compareAtPrice": 599000,
+      "sku": "CNV-CHK-001",
+      "barcode": "8991234567893",
+      "inventory": 1,
+      "lowStockThreshold": 1,
+      "dimensions": { "length": 32, "width": 20, "height": 12, "weight": 500 },
+      "featured": false,
+      "categories": ["preloved", "wanita", "sepatu"],
+      "variants": [
+        {
+          "name": "37 - Putih Vintage",
+          "sku": "CNV-CHK-001-37",
+          "price": 175000,
+          "inventory": 1,
+          "dimensions": {
+            "length": 28,
+            "width": 18,
+            "height": 11,
+            "weight": 480
+          },
+          "attributes": { "color": "Putih Vintage", "size": "37" }
+        }
+      ],
+      "specifications": [
+        { "label": "Brand", "value": "Converse" },
+        { "label": "Kondisi", "value": "7.5/10" },
+        { "label": "Alasan Jual", "value": "Kebesaran size" }
+      ]
+    },
+    {
+      "name": "Tote Bag Forever 21 - Preloved",
+      "slug": "tote-bag-forever21-preloved",
+      "shortDescription": "Tote bag kanvas Forever 21, aesthetic",
+      "description": "## Tote Bag Forever 21 — Preloved\n\nTote bag kanvas dari Forever 21, muat banyak cocok buat kuliah/kerja. Model simpel dan matching semua outfit.\n\n### Detail:\n- Brand: Forever 21\n- Bahan: Kanvas tebal\n- Kondisi: 8/10 (minus di sudut bawah ada flek kecil, ngga kelihatan kalau dipake)\n- Alasan jual: udah punya tote lain yang lebih sering dipake",
+      "price": 65000,
+      "compareAtPrice": 199000,
+      "sku": "F21-TOTE-001",
+      "barcode": "8991234567894",
+      "inventory": 1,
+      "lowStockThreshold": 1,
+      "dimensions": { "length": 35, "width": 28, "height": 8, "weight": 200 },
+      "featured": false,
+      "categories": ["preloved", "wanita", "tas"],
+      "variants": [
+        {
+          "name": "Cream White",
+          "sku": "F21-TOTE-001-CW",
+          "price": 65000,
+          "inventory": 1,
+          "attributes": { "color": "Cream White" }
+        }
+      ],
+      "specifications": [
+        { "label": "Brand", "value": "Forever 21" },
+        { "label": "Kondisi", "value": "8/10" },
+        { "label": "Alasan Jual", "value": "Jarang dipakai" }
+      ]
+    },
+    {
+      "name": "Gunting Kuku Electric Bayi",
+      "slug": "gunting-kuku-electric-bayi",
+      "shortDescription": "Gunting kuku electric untuk bayi, aman & nyaman",
+      "description": "## Gunting Kuku Electric Bayi\n\nGunting kuku electric khusus bayi dengan desain aman. Cocok untuk memotong kuku si kecil tanpa resiko terluka.\n\n### Detail:\n- Tipe: Electric / battery powered\n- Mata gunting: Safety blade, tidak melukai kulit\n- Cocok untuk: Bayi 0-12 bulan",
+      "price": 45000,
+      "compareAtPrice": 75000,
+      "sku": "BABY-NAIL-001",
+      "barcode": "8991234567895",
+      "inventory": 10,
+      "lowStockThreshold": 2,
+      "dimensions": { "length": 12, "width": 8, "height": 4, "weight": 100 },
+      "featured": false,
+      "categories": ["bayi", "perawatan"],
+      "specifications": [
+        { "label": "Tipe", "value": "Electric" },
+        { "label": "Usia", "value": "0-12 bulan" }
+      ]
+    },
+    {
+      "name": "Cussons Hair Lotion 100ml",
+      "slug": "cussons-hair-lotion-100ml",
+      "shortDescription": "Cussons hair lotion 100ml untuk rambut bayi",
+      "description": "## Cussons Hair Lotion 100ml\n\nHair lotion Cussons untuk perawatan rambut bayi. Kemasan 100ml.\n\n### Detail:\n- Brand: Cussons Baby\n- Volume: 100ml\n- Manfaat: Melembutkan dan merawat rambut bayi",
+      "price": 25000,
+      "compareAtPrice": 35000,
+      "sku": "CUS-HL-001",
+      "barcode": "8991234567896",
+      "inventory": 15,
+      "lowStockThreshold": 3,
+      "dimensions": { "length": 10, "width": 5, "height": 15, "weight": 120 },
+      "featured": false,
+      "categories": ["bayi", "perawatan"],
+      "specifications": [
+        { "label": "Brand", "value": "Cussons Baby" },
+        { "label": "Volume", "value": "100ml" }
+      ]
+    },
+    {
+      "name": "Baby Chair",
+      "slug": "baby-chair",
+      "shortDescription": "Baby chair nyaman untuk si kecil",
+      "description": "## Baby Chair\n\nKursi bayi dengan desain ergonomis. Cocok untuk makan atau bermain.\n\n### Detail:\n- Bahan: Plastik berkualitas\n- Fitur: Dilengkapi sabuk pengaman\n- Mudah dibersihkan",
+      "price": 150000,
+      "compareAtPrice": 250000,
+      "sku": "BABY-CHAIR-001",
+      "barcode": "8991234567897",
+      "inventory": 5,
+      "lowStockThreshold": 2,
+      "dimensions": { "length": 45, "width": 40, "height": 60, "weight": 2000 },
+      "featured": true,
+      "categories": ["bayi", "perlengkapan"],
+      "specifications": [
+        { "label": "Bahan", "value": "Plastik" },
+        { "label": "Fitur", "value": "Sabuk pengaman" }
+      ]
+    },
+    {
+      "name": "Popok Ukuran L",
+      "slug": "popok-ukuran-l",
+      "shortDescription": "Popok bayi ukuran L, nyaman & anti bocor",
+      "description": "## Popok Ukuran L\n\nPopok bayi ukuran Large, cocok untuk bayi dengan berat 9-14 kg. Daya serap tinggi dan anti bocor.\n\n### Detail:\n- Ukuran: L (Large)\n- Berat: 9-14 kg\n- Daya serap: Tinggi\n- Anti bocor",
+      "price": 85000,
+      "compareAtPrice": 110000,
+      "sku": "POK-L-001",
+      "barcode": "8991234567898",
+      "inventory": 30,
+      "lowStockThreshold": 5,
+      "dimensions": { "length": 30, "width": 25, "height": 15, "weight": 800 },
+      "featured": false,
+      "categories": ["bayi", "popok"],
+      "specifications": [
+        { "label": "Ukuran", "value": "L (Large)" },
+        { "label": "Berat Badan", "value": "9-14 kg" }
+      ]
+    },
+    {
+      "name": "Popok Ukuran S",
+      "slug": "popok-ukuran-s",
+      "shortDescription": "Popok bayi ukuran S, nyaman & anti bocor",
+      "description": "## Popok Ukuran S\n\nPopok bayi ukuran Small, cocok untuk bayi dengan berat 4-8 kg. Daya serap tinggi dan anti bocor.\n\n### Detail:\n- Ukuran: S (Small)\n- Berat: 4-8 kg\n- Daya serap: Tinggi\n- Anti bocor",
+      "price": 75000,
+      "compareAtPrice": 95000,
+      "sku": "POK-S-001",
+      "barcode": "8991234567899",
+      "inventory": 25,
+      "lowStockThreshold": 5,
+      "dimensions": { "length": 28, "width": 22, "height": 12, "weight": 600 },
+      "featured": false,
+      "categories": ["bayi", "popok"],
+      "specifications": [
+        { "label": "Ukuran", "value": "S (Small)" },
+        { "label": "Berat Badan", "value": "4-8 kg" }
+      ]
+    },
+    {
+      "name": "Kompresan Payudara",
+      "slug": "kompresan-payudara",
+      "shortDescription": "Kompresan payudara untuk ibu menyusui",
+      "description": "## Kompresan Payudara\n\nKompresan payudara untuk meredakan nyeri dan bengkak pada ibu menyusui. Bisa digunakan hangat atau dingin.\n\n### Detail:\n- Tipe: Gel pack, bisa dipanaskan atau didinginkan\n- Material: Lembut, nyaman di kulit\n- Manfaat: Meredakan ASI tersumbat, nyeri payudara",
+      "price": 35000,
+      "compareAtPrice": 55000,
+      "sku": "MOM-COMP-001",
+      "barcode": "8991234567900",
+      "inventory": 8,
+      "lowStockThreshold": 2,
+      "dimensions": { "length": 15, "width": 15, "height": 3, "weight": 150 },
+      "featured": false,
+      "categories": ["ibu", "perawatan"],
+      "specifications": [
+        { "label": "Tipe", "value": "Gel pack" },
+        { "label": "Penggunaan", "value": "Hangat / Dingin" }
+      ]
+    },
+    {
+      "name": "Korset",
+      "slug": "korset",
+      "shortDescription": "Korset untuk shaping pasca melahirkan",
+      "description": "## Korset\n\nKorset untuk membentuk tubuh pasca melahirkan. Nyaman dipakai sehari-hari.\n\n### Detail:\n- Bahan: Spandek elastis, breathable\n- Manfaat: Membantu merampingkan perut pasca melahirkan\n- Ukuran: Adjustable / One size",
+      "price": 55000,
+      "compareAtPrice": 90000,
+      "sku": "MOM-CORSET-001",
+      "barcode": "8991234567901",
+      "inventory": 10,
+      "lowStockThreshold": 3,
+      "dimensions": { "length": 25, "width": 15, "height": 5, "weight": 200 },
+      "featured": false,
+      "categories": ["ibu", "pakaian"],
+      "specifications": [
+        { "label": "Bahan", "value": "Spandek elastis" },
+        { "label": "Manfaat", "value": "Post-partum shaping" }
       ]
     }
   ]
