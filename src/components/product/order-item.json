@@ -28,6 +28,9 @@
     "totalPrice": {
       "type": "decimal",
       "required": true
+    },
+    "imageUrl": {
+      "type": "string"
     }
   },
   "config": {}

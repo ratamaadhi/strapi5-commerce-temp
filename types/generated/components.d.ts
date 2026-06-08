@@ -93,6 +93,7 @@ export interface ProductOrderItem extends Struct.ComponentSchema {
     icon: 'bulletList';
   };
   attributes: {
+    imageUrl: Schema.Attribute.String;
     productName: Schema.Attribute.String & Schema.Attribute.Required;
     productSku: Schema.Attribute.Text;
     quantity: Schema.Attribute.BigInteger &
