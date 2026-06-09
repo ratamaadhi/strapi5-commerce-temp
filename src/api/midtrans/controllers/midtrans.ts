@@ -24,8 +24,8 @@ export default {
       return;
     }
 
-    const orders = await strapi.documents('api::order.order').findMany({
-      filters: { orderNumber: { $eq: payload.order_id } },
+    const orders = await (strapi as any).entityService.findMany('api::order.order', {
+      filters: { orderNumber: payload.order_id },
     }) as any;
 
     if (!orders || orders.length === 0) {
