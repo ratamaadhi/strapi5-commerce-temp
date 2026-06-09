@@ -13,7 +13,7 @@
   "attributes": {
     "orderNumber": {
       "type": "string",
-      "required": true,
+      "required": false,
       "unique": true
     },
     "orderStatus": {

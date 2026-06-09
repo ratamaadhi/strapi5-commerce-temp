@@ -531,9 +531,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     midtransTransactionId: Schema.Attribute.String;
     midtransTransactionStatus: Schema.Attribute.String;
     notes: Schema.Attribute.Text;
-    orderNumber: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.Unique;
+    orderNumber: Schema.Attribute.String & Schema.Attribute.Unique;
     orderStatus: Schema.Attribute.Enumeration<
       ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']
     >;
