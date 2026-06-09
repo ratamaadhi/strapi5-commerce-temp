@@ -76,6 +76,7 @@ export default {
 
       const template = {
         subject: `Order #${order.orderNumber} - Confirmed`,
+        text: `Your order #${order.orderNumber} has been confirmed. Total: ${order.currency} ${Number(order.totalAmount).toLocaleString()}. Status: ${order.orderStatus}. Payment: ${order.paymentStatus}.`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #333;">Order Confirmed</h1>
