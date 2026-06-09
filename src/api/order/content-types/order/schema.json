@@ -61,6 +61,21 @@
       "type": "string",
       "default": "IDR"
     },
+    "midtransTransactionId": {
+      "type": "string"
+    },
+    "midtransTransactionStatus": {
+      "type": "string"
+    },
+    "midtransPaymentType": {
+      "type": "string"
+    },
+    "midtransSnapToken": {
+      "type": "text"
+    },
+    "paidAt": {
+      "type": "datetime"
+    },
     "notes": {
       "type": "text"
     },

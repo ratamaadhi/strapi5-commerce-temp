@@ -16,6 +16,13 @@
     "variantInfo": {
       "type": "text"
     },
+    "productDocumentId": {
+      "type": "string",
+      "required": true
+    },
+    "variantSku": {
+      "type": "string"
+    },
     "quantity": {
       "type": "biginteger",
       "required": true,

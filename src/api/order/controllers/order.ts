@@ -59,13 +59,98 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     await this.validateQuery(ctx);
 
     const sanitizedQueryParams = await this.sanitizeQuery(ctx);
+    const requestData = ctx.request.body.data ?? ctx.request.body;
+    const items = requestData.items ?? [];
+    const shippingAddress = requestData.shippingAddress ?? null;
+
+    for (const item of items) {
+      if (!item.productDocumentId) {
+        return ctx.badRequest('productDocumentId is required for each order item');
+      }
+
+      const product = await strapi.documents('api::product.product').findOne({
+        documentId: item.productDocumentId,
+        populate: ['variants'],
+      }) as any;
+
+      if (!product) {
+        return ctx.badRequest(`Product not found: ${item.productDocumentId}`);
+      }
+
+      if (item.variantSku) {
+        if (!product.variants || product.variants.length === 0) {
+          return ctx.badRequest(`Product ${product.name} has no variants`);
+        }
+        const variant = product.variants.find((v: any) => v.sku === item.variantSku);
+        if (!variant) {
+          return ctx.badRequest(`Variant not found: SKU ${item.variantSku}`);
+        }
+        if (variant.inventory < item.quantity) {
+          return ctx.badRequest(
+            `Insufficient stock for ${product.name} (${variant.name}): requested ${item.quantity}, available ${variant.inventory}`
+          );
+        }
+      } else {
+        if (product.inventory < item.quantity) {
+          return ctx.badRequest(
+            `Insufficient stock for ${product.name}: requested ${item.quantity}, available ${product.inventory}`
+          );
+        }
+      }
+    }
+
+    const ts = Date.now();
+    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const orderNumber = `ORD-${ts}-${rand}`;
+
+    const userEntity = ctx.state.user
+      ? await strapi.documents('plugin::users-permissions.user').findOne({
+          documentId: ctx.state.user.documentId,
+        }) as any
+      : null;
+
+    let snapToken: string | null = null;
+    try {
+      const midtransService = strapi.service('api::midtrans.midtrans');
+
+      const customerFirstName = shippingAddress?.firstName
+        ?? userEntity?.firstname
+        ?? userEntity?.username
+        ?? 'Customer';
+
+      const customerEmail = shippingAddress?.email ?? userEntity?.email ?? '';
+      const customerPhone = shippingAddress?.phone ?? userEntity?.phone ?? '';
+
+      const result = await midtransService.generateSnapToken({
+        orderId: orderNumber,
+        grossAmount: Number(requestData.totalAmount ?? 0),
+        customerDetails: {
+          firstName: customerFirstName,
+          email: customerEmail,
+          phone: customerPhone,
+        },
+        itemDetails: items.map((item: any) => ({
+          id: item.productDocumentId + (item.variantSku ? `-${item.variantSku}` : ''),
+          price: Number(item.unitPrice ?? 0),
+          quantity: Number(item.quantity ?? 0),
+          name: item.productName ?? 'Product',
+        })),
+      });
+
+      snapToken = result.token;
+    } catch (err: any) {
+      strapi.log.error('Midtrans Snap token generation failed:', err);
+      return ctx.internalServerError('Payment gateway error: ' + (err.message ?? 'Unknown'));
+    }
 
     const entity = await strapi
       .service('api::order.order')
       .create({
         ...sanitizedQueryParams,
         data: {
-          ...ctx.request.body,
+          orderNumber,
+          ...requestData,
+          midtransSnapToken: snapToken,
           ...(ctx.state.user ? { user: ctx.state.user.documentId } : {}),
         },
       });
