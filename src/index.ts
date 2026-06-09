@@ -39,6 +39,18 @@ export default {
         },
         config: { auth: false },
       },
+      {
+        method: 'POST',
+        path: '/orders/:documentId/regenerate-snap-token',
+        handler: async (ctx: any) => {
+          const ctrl: any = strapi.controller('api::order.order');
+          if (!ctrl) {
+            strapi.log.error('Order controller not loaded');
+            return ctx.internalServerError('Controller not available');
+          }
+          return ctrl.regenerateSnapToken(ctx);
+        },
+      },
     ]);
   },
 
