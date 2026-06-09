@@ -18,13 +18,20 @@ export default {
       return ctx.forbidden('Invalid signature');
     }
 
+    if (String(payload.order_id ?? '').startsWith('payment_notif_test_')) {
+      strapi.log.info('Midtrans test notification received, acknowledging');
+      ctx.body = { status: 'ok', message: 'Test notification acknowledged' };
+      return;
+    }
+
     const orders = await strapi.documents('api::order.order').findMany({
       filters: { orderNumber: { $eq: payload.order_id } },
     }) as any;
 
     if (!orders || orders.length === 0) {
       strapi.log.warn(`Midtrans webhook: order not found: ${payload.order_id}`);
-      return ctx.notFound('Order not found');
+      ctx.body = { status: 'ok', message: 'Order not found, notification acknowledged' };
+      return;
     }
 
     const order = orders[0];
