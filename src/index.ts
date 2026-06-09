@@ -26,6 +26,19 @@ export default {
         },
         config: { auth: false },
       },
+      {
+        method: 'POST',
+        path: '/midtrans/webhook',
+        handler: async (ctx: any) => {
+          const handler = strapi.controller('api::midtrans.midtrans');
+          if (!handler) {
+            strapi.log.error('Midtrans controller not loaded — try restarting Strapi');
+            return ctx.internalServerError('Midtrans controller not available');
+          }
+          return handler.webhook(ctx);
+        },
+        config: { auth: false },
+      },
     ]);
   },
 
