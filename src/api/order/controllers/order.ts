@@ -192,6 +192,66 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     return this.transformResponse(sanitizedEntity);
   },
 
+  async regenerateSnapToken(ctx) {
+    const { documentId } = ctx.params;
+
+    const ownershipFilter = ctx.state.user
+      ? { user: { documentId: { $eq: ctx.state.user.documentId } } }
+      : {};
+
+    const order = await strapi.documents('api::order.order').findOne({
+      documentId,
+      ...(Object.keys(ownershipFilter).length ? { filters: ownershipFilter } : {}),
+      populate: ['user', 'items', 'shippingAddress'],
+    }) as any;
+
+    if (!order) {
+      return ctx.notFound('Order not found');
+    }
+
+    const shippingAddress = order.shippingAddress;
+
+    try {
+      const midtransService = strapi.service('api::midtrans.midtrans');
+
+      const customerFirstName = shippingAddress?.firstName
+        ?? order.user?.firstname
+        ?? order.user?.username
+        ?? 'Customer';
+
+      const customerEmail = shippingAddress?.email ?? order.user?.email ?? '';
+      const customerPhone = shippingAddress?.phone ?? order.user?.phone ?? '';
+
+      const result = await midtransService.generateSnapToken({
+        orderId: order.orderNumber,
+        grossAmount: Number(order.totalAmount ?? 0),
+        customerDetails: {
+          firstName: customerFirstName,
+          email: customerEmail,
+          phone: customerPhone,
+        },
+        itemDetails: (order.items ?? []).map((item: any) => ({
+          id: item.productDocumentId + (item.variantSku ? `-${item.variantSku}` : ''),
+          price: Number(item.unitPrice ?? 0),
+          quantity: Number(item.quantity ?? 0),
+          name: item.productName ?? 'Product',
+        })),
+      });
+
+      await strapi.documents('api::order.order').update({
+        documentId: order.documentId,
+        data: { midtransSnapToken: result.token },
+      });
+
+      strapi.log.info(`Snap token regenerated for order ${order.orderNumber}`);
+
+      return { snapToken: result.token, redirectUrl: result.redirectUrl };
+    } catch (err: any) {
+      strapi.log.error('Snap token regeneration failed:', err);
+      return ctx.internalServerError('Payment gateway error: ' + (err.message ?? 'Unknown'));
+    }
+  },
+
   async delete(ctx) {
     const { id } = ctx.params;
 
