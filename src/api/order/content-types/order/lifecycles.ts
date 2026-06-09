@@ -94,14 +94,14 @@ export default {
                 <th style="text-align: right; padding: 8px;">Price</th>
                 <th style="text-align: right; padding: 8px;">Total</th>
               </tr>
-              <% items.forEach(item => { %>
+              <% for (var i = 0; i < items.length; i++) { var item = items[i]; %>
                 <tr>
                   <td style="padding: 8px;"><%= item.productName %><% if (item.variantInfo) { %> <small>(<%= item.variantInfo %>)</small><% } %></td>
                   <td style="text-align: right; padding: 8px;"><%= item.quantity %></td>
                   <td style="text-align: right; padding: 8px;"><%= currency %> <%= Number(item.unitPrice).toLocaleString() %></td>
                   <td style="text-align: right; padding: 8px;"><%= currency %> <%= Number(item.totalPrice).toLocaleString() %></td>
                 </tr>
-              <% }) %>
+              <% } %>
             </table>
 
             <p style="margin-top: 16px; font-weight: bold;">Subtotal: <%= currency %> <%= Number(subtotal).toLocaleString() %></p>
