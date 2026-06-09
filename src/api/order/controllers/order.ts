@@ -121,6 +121,42 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       const customerEmail = shippingAddress?.email ?? userEntity?.email ?? '';
       const customerPhone = shippingAddress?.phone ?? userEntity?.phone ?? '';
 
+      const productItems = items.map((item: any) => ({
+        id: item.productDocumentId + (item.variantSku ? `-${item.variantSku}` : ''),
+        price: Number(item.unitPrice ?? 0),
+        quantity: Number(item.quantity ?? 0),
+        name: item.productName ?? 'Product',
+      }));
+
+      const midtransItems = [...productItems];
+
+      if (Number(requestData.shippingCost ?? 0) > 0) {
+        midtransItems.push({
+          id: 'SHIPPING',
+          price: Number(requestData.shippingCost ?? 0),
+          quantity: 1,
+          name: 'Shipping Cost',
+        });
+      }
+
+      if (Number(requestData.tax ?? 0) > 0) {
+        midtransItems.push({
+          id: 'TAX',
+          price: Number(requestData.tax ?? 0),
+          quantity: 1,
+          name: 'Tax',
+        });
+      }
+
+      if (Number(requestData.discount ?? 0) > 0) {
+        midtransItems.push({
+          id: 'DISCOUNT',
+          price: -Number(requestData.discount ?? 0),
+          quantity: 1,
+          name: 'Discount',
+        });
+      }
+
       const result = await midtransService.generateSnapToken({
         orderId: orderNumber,
         grossAmount: Number(requestData.totalAmount ?? 0),
@@ -129,12 +165,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           email: customerEmail,
           phone: customerPhone,
         },
-        itemDetails: items.map((item: any) => ({
-          id: item.productDocumentId + (item.variantSku ? `-${item.variantSku}` : ''),
-          price: Number(item.unitPrice ?? 0),
-          quantity: Number(item.quantity ?? 0),
-          name: item.productName ?? 'Product',
-        })),
+        itemDetails: midtransItems,
       });
 
       snapToken = result.token;
@@ -222,6 +253,42 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       const customerEmail = shippingAddress?.email ?? order.user?.email ?? '';
       const customerPhone = shippingAddress?.phone ?? order.user?.phone ?? '';
 
+      const productItems = (order.items ?? []).map((item: any) => ({
+        id: item.productDocumentId + (item.variantSku ? `-${item.variantSku}` : ''),
+        price: Number(item.unitPrice ?? 0),
+        quantity: Number(item.quantity ?? 0),
+        name: item.productName ?? 'Product',
+      }));
+
+      const midtransItems = [...productItems];
+
+      if (Number(order.shippingCost ?? 0) > 0) {
+        midtransItems.push({
+          id: 'SHIPPING',
+          price: Number(order.shippingCost ?? 0),
+          quantity: 1,
+          name: 'Shipping Cost',
+        });
+      }
+
+      if (Number(order.tax ?? 0) > 0) {
+        midtransItems.push({
+          id: 'TAX',
+          price: Number(order.tax ?? 0),
+          quantity: 1,
+          name: 'Tax',
+        });
+      }
+
+      if (Number(order.discount ?? 0) > 0) {
+        midtransItems.push({
+          id: 'DISCOUNT',
+          price: -Number(order.discount ?? 0),
+          quantity: 1,
+          name: 'Discount',
+        });
+      }
+
       const result = await midtransService.generateSnapToken({
         orderId: order.orderNumber,
         grossAmount: Number(order.totalAmount ?? 0),
@@ -230,12 +297,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           email: customerEmail,
           phone: customerPhone,
         },
-        itemDetails: (order.items ?? []).map((item: any) => ({
-          id: item.productDocumentId + (item.variantSku ? `-${item.variantSku}` : ''),
-          price: Number(item.unitPrice ?? 0),
-          quantity: Number(item.quantity ?? 0),
-          name: item.productName ?? 'Product',
-        })),
+        itemDetails: midtransItems,
       });
 
       await strapi.documents('api::order.order').update({
