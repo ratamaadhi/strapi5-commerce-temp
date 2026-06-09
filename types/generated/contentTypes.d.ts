@@ -526,6 +526,10 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::order.order'> &
       Schema.Attribute.Private;
+    midtransPaymentType: Schema.Attribute.String;
+    midtransSnapToken: Schema.Attribute.Text;
+    midtransTransactionId: Schema.Attribute.String;
+    midtransTransactionStatus: Schema.Attribute.String;
     notes: Schema.Attribute.Text;
     orderNumber: Schema.Attribute.String &
       Schema.Attribute.Required &
@@ -533,6 +537,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     orderStatus: Schema.Attribute.Enumeration<
       ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']
     >;
+    paidAt: Schema.Attribute.DateTime;
     paymentStatus: Schema.Attribute.Enumeration<
       ['pending', 'paid', 'failed', 'refunded']
     >;

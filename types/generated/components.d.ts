@@ -28,6 +28,7 @@ export interface ProductCartItem extends Struct.ComponentSchema {
     icon: 'shoppingCart';
   };
   attributes: {
+    productDocumentId: Schema.Attribute.String & Schema.Attribute.Required;
     quantity: Schema.Attribute.BigInteger &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMax<
@@ -37,6 +38,7 @@ export interface ProductCartItem extends Struct.ComponentSchema {
         string
       >;
     variantId: Schema.Attribute.String;
+    variantSku: Schema.Attribute.String;
   };
 }
 
@@ -94,6 +96,7 @@ export interface ProductOrderItem extends Struct.ComponentSchema {
   };
   attributes: {
     imageUrl: Schema.Attribute.String;
+    productDocumentId: Schema.Attribute.String & Schema.Attribute.Required;
     productName: Schema.Attribute.String & Schema.Attribute.Required;
     productSku: Schema.Attribute.Text;
     quantity: Schema.Attribute.BigInteger &
@@ -107,6 +110,7 @@ export interface ProductOrderItem extends Struct.ComponentSchema {
     totalPrice: Schema.Attribute.Decimal & Schema.Attribute.Required;
     unitPrice: Schema.Attribute.Decimal & Schema.Attribute.Required;
     variantInfo: Schema.Attribute.Text;
+    variantSku: Schema.Attribute.String;
   };
 }
 
