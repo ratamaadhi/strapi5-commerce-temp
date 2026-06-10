@@ -138,7 +138,7 @@ export default {
           <p style="font-size: 12px; color: #999;">This is an automated message. Please do not reply.</p>
         </div>`;
 
-      await strapi.plugins['email'].services.email.send({
+      strapi.plugins['email'].services.email.send({
         to: customerEmail,
         subject: `Order #${order.orderNumber} - Confirmed`,
         text: `Your order #${order.orderNumber} has been confirmed. Total: ${cur} ${fmt(order.totalAmount)}. Status: ${order.orderStatus}. Payment: ${order.paymentStatus}.`,
