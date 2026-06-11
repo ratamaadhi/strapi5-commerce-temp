@@ -3,6 +3,7 @@
  */
 
 import { factories } from '@strapi/strapi';
+import { incrementVariantInventory, decrementVariantInventory } from '../services/inventory';
 
 const MAX_RETRY_COUNT = 3;
 
@@ -25,23 +26,16 @@ async function rollbackDecrements(
         }) as any;
 
         if (product && product.variants) {
-          const updatedVariants = product.variants.map((v: any) => {
-            if (v.sku === item.variantSku) {
-              return { ...v, inventory: Number(v.inventory) + item.quantity };
-            }
-            return v;
-          });
-
-          await strapi.db.query('api::product.product').update({
-            where: { id: item.productId },
-            data: { variants: updatedVariants },
-          });
+          const variant = product.variants.find(
+            (v: any) => v.sku === item.variantSku
+          );
+          if (variant) {
+            await incrementVariantInventory(strapi, variant.id, item.quantity);
+          }
         }
       } else {
         await strapi.db.connection.raw(
-          `UPDATE products
-           SET inventory = inventory + :qty
-           WHERE id = :id`,
+          `UPDATE products SET inventory = inventory + :qty WHERE id = :id`,
           { id: item.productId, qty: item.quantity }
         );
       }
