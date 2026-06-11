@@ -135,27 +135,18 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         if (!product.variants || product.variants.length === 0) {
           return ctx.badRequest(`Product ${product.name} has no variants`);
         }
-        const variantIndex = product.variants.findIndex((v: any) => v.sku === item.variantSku);
-        if (variantIndex === -1) {
+        const variant = product.variants.find((v: any) => v.sku === item.variantSku);
+        if (!variant) {
           return ctx.badRequest(`Variant not found: SKU ${item.variantSku}`);
         }
 
-        const variant = product.variants[variantIndex];
-        const currentStock = Number(variant.inventory) || 0;
-
-        if (currentStock < qty) {
+        const result = await decrementVariantInventory(strapi, variant.id, qty);
+        if (!result.success) {
           await rollbackDecrements(strapi, decrementedItems);
           return ctx.badRequest(
-            `Insufficient stock for ${product.name} (${variant.name}): requested ${qty}, available ${currentStock}`
+            `Insufficient stock for ${product.name} (${variant.name}): requested ${qty}`
           );
         }
-
-        variant.inventory = currentStock - qty;
-
-        await strapi.db.query('api::product.product').update({
-          where: { id: Number(product.id) },
-          data: { variants: product.variants },
-        });
 
         decrementedItems.push({
           productId: Number(product.id),
@@ -490,27 +481,18 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         if (!product.variants || product.variants.length === 0) {
           return ctx.badRequest(`Product ${product.name} has no variants`);
         }
-        const variantIndex = product.variants.findIndex((v: any) => v.sku === item.variantSku);
-        if (variantIndex === -1) {
+        const variant = product.variants.find((v: any) => v.sku === item.variantSku);
+        if (!variant) {
           return ctx.badRequest(`Variant not found: SKU ${item.variantSku}`);
         }
 
-        const variant = product.variants[variantIndex];
-        const currentStock = Number(variant.inventory) || 0;
-
-        if (currentStock < qty) {
+        const result = await decrementVariantInventory(strapi, variant.id, qty);
+        if (!result.success) {
           await rollbackDecrements(strapi, decrementedItems);
           return ctx.badRequest(
-            `Insufficient stock for ${product.name} (${variant.name}): requested ${qty}, available ${currentStock}`
+            `Insufficient stock for ${product.name} (${variant.name}): requested ${qty}`
           );
         }
-
-        variant.inventory = currentStock - qty;
-
-        await strapi.db.query('api::product.product').update({
-          where: { id: Number(product.id) },
-          data: { variants: product.variants },
-        });
 
         decrementedItems.push({
           productId: Number(product.id),
