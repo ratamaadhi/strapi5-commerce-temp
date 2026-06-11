@@ -1,3 +1,5 @@
+import { incrementVariantInventory } from '../../services/inventory';
+
 export default {
   async afterCreate(event: any) {
     const { result } = event;
@@ -133,18 +135,12 @@ export default {
         }
 
         if (item.variantSku && product.variants && product.variants.length > 0) {
-          const variantIndex = product.variants.findIndex(
+          const variant = product.variants.find(
             (v: any) => v.sku === item.variantSku
           );
-          if (variantIndex >= 0) {
-            const variant = product.variants[variantIndex];
+          if (variant) {
             const qty = Number(item.quantity) || 0;
-            variant.inventory = Number(variant.inventory) + qty;
-
-            await strapi.db.query('api::product.product').update({
-              where: { id: Number(product.id) },
-              data: { variants: product.variants },
-            });
+            await incrementVariantInventory(strapi, variant.id, qty);
 
             strapi.log.info(
               `Restored variant ${variant.sku} inventory by ${qty}`
