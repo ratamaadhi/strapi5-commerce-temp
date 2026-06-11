@@ -10,6 +10,7 @@ async function rollbackDecrements(
   strapi: any,
   items: Array<{
     productId: number;
+    productDocumentId?: string;
     variantSku: string | null;
     quantity: number;
     mode: 'product' | 'variant';
@@ -17,13 +18,25 @@ async function rollbackDecrements(
 ) {
   for (const item of items) {
     try {
-      if (item.mode === 'variant' && item.variantSku) {
-        await strapi.db.connection.raw(
-          `UPDATE components_product_product_variants
-           SET inventory = inventory + :qty
-           WHERE entity_id = :pid AND sku = :sku`,
-          { pid: item.productId, sku: item.variantSku, qty: item.quantity }
-        );
+      if (item.mode === 'variant' && item.variantSku && item.productDocumentId) {
+        const product = await strapi.documents('api::product.product').findOne({
+          documentId: item.productDocumentId,
+          populate: ['variants'],
+        }) as any;
+
+        if (product && product.variants) {
+          const updatedVariants = product.variants.map((v: any) => {
+            if (v.sku === item.variantSku) {
+              return { ...v, inventory: Number(v.inventory) + item.quantity };
+            }
+            return v;
+          });
+
+          await strapi.documents('api::product.product').update({
+            documentId: product.documentId,
+            data: { variants: updatedVariants },
+          });
+        }
       } else {
         await strapi.db.connection.raw(
           `UPDATE products
@@ -99,6 +112,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
     const decrementedItems: Array<{
       productId: number;
+      productDocumentId?: string;
       variantSku: string | null;
       quantity: number;
       mode: 'product' | 'variant';
@@ -127,28 +141,31 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         if (!product.variants || product.variants.length === 0) {
           return ctx.badRequest(`Product ${product.name} has no variants`);
         }
-        const variant = product.variants.find((v: any) => v.sku === item.variantSku);
-        if (!variant) {
+        const variantIndex = product.variants.findIndex((v: any) => v.sku === item.variantSku);
+        if (variantIndex === -1) {
           return ctx.badRequest(`Variant not found: SKU ${item.variantSku}`);
         }
 
-        const result = await strapi.db.connection.raw(
-          `UPDATE components_product_product_variants
-           SET inventory = inventory - :qty
-           WHERE entity_id = :pid AND sku = :sku AND inventory >= :qty
-           RETURNING id`,
-          { pid: Number(product.id), sku: item.variantSku, qty }
-        );
+        const variant = product.variants[variantIndex];
+        const currentStock = Number(variant.inventory) || 0;
 
-        if (!result?.rows || result.rows.length === 0) {
+        if (currentStock < qty) {
           await rollbackDecrements(strapi, decrementedItems);
           return ctx.badRequest(
-            `Insufficient stock for ${product.name} (${variant.name}): requested ${qty}, insufficient stock`
+            `Insufficient stock for ${product.name} (${variant.name}): requested ${qty}, available ${currentStock}`
           );
         }
 
+        variant.inventory = currentStock - qty;
+
+        await strapi.documents('api::product.product').update({
+          documentId: product.documentId,
+          data: { variants: product.variants },
+        });
+
         decrementedItems.push({
           productId: Number(product.id),
+          productDocumentId: item.productDocumentId,
           variantSku: item.variantSku,
           quantity: qty,
           mode: 'variant',
@@ -450,6 +467,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
     const decrementedItems: Array<{
       productId: number;
+      productDocumentId?: string;
       variantSku: string | null;
       quantity: number;
       mode: 'product' | 'variant';
@@ -478,28 +496,31 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         if (!product.variants || product.variants.length === 0) {
           return ctx.badRequest(`Product ${product.name} has no variants`);
         }
-        const variant = product.variants.find((v: any) => v.sku === item.variantSku);
-        if (!variant) {
+        const variantIndex = product.variants.findIndex((v: any) => v.sku === item.variantSku);
+        if (variantIndex === -1) {
           return ctx.badRequest(`Variant not found: SKU ${item.variantSku}`);
         }
 
-        const result = await strapi.db.connection.raw(
-          `UPDATE components_product_product_variants
-           SET inventory = inventory - :qty
-           WHERE entity_id = :pid AND sku = :sku AND inventory >= :qty
-           RETURNING id`,
-          { pid: Number(product.id), sku: item.variantSku, qty }
-        );
+        const variant = product.variants[variantIndex];
+        const currentStock = Number(variant.inventory) || 0;
 
-        if (!result?.rows || result.rows.length === 0) {
+        if (currentStock < qty) {
           await rollbackDecrements(strapi, decrementedItems);
           return ctx.badRequest(
-            `Insufficient stock for ${product.name} (${variant.name}): requested ${qty}, insufficient stock`
+            `Insufficient stock for ${product.name} (${variant.name}): requested ${qty}, available ${currentStock}`
           );
         }
 
+        variant.inventory = currentStock - qty;
+
+        await strapi.documents('api::product.product').update({
+          documentId: product.documentId,
+          data: { variants: product.variants },
+        });
+
         decrementedItems.push({
           productId: Number(product.id),
+          productDocumentId: item.productDocumentId,
           variantSku: item.variantSku,
           quantity: qty,
           mode: 'variant',
