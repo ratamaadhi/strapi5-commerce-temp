@@ -535,11 +535,20 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     orderStatus: Schema.Attribute.Enumeration<
       ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']
     >;
+    originalOrder: Schema.Attribute.Relation<'manyToOne', 'api::order.order'>;
     paidAt: Schema.Attribute.DateTime;
     paymentStatus: Schema.Attribute.Enumeration<
       ['pending', 'paid', 'failed', 'refunded']
     >;
     publishedAt: Schema.Attribute.DateTime;
+    retryCount: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
     shippedAt: Schema.Attribute.DateTime;
     shippingAddress: Schema.Attribute.Component<'common.address', false>;
     shippingCost: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;

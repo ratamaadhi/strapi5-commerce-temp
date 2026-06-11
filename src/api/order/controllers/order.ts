@@ -4,6 +4,8 @@
 
 import { factories } from '@strapi/strapi';
 
+const MAX_RETRY_COUNT = 3;
+
 async function rollbackDecrements(
   strapi: any,
   items: Array<{
@@ -324,6 +326,18 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       return ctx.notFound('Order not found');
     }
 
+    if (order.orderStatus === 'cancelled' || order.orderStatus === 'refunded') {
+      return ctx.badRequest(
+        `Cannot regenerate payment token for a ${order.orderStatus} order`
+      );
+    }
+
+    if (order.midtransTransactionStatus) {
+      return ctx.badRequest(
+        'Payment has already been processed for this order. Use the retry endpoint to create a new payment attempt.'
+      );
+    }
+
     const shippingAddress = order.shippingAddress;
 
     try {
@@ -396,6 +410,269 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       strapi.log.error('Snap token regeneration failed:', err);
       return ctx.internalServerError('Payment gateway error: ' + (err.message ?? 'Unknown'));
     }
+  },
+
+  async retryOrder(ctx) {
+    const { documentId } = ctx.params;
+
+    const ownershipFilter = ctx.state.user
+      ? { user: { documentId: { $eq: ctx.state.user.documentId } } }
+      : {};
+
+    const original = await strapi.documents('api::order.order').findOne({
+      documentId,
+      ...(Object.keys(ownershipFilter).length ? { filters: ownershipFilter } : {}),
+      populate: ['items', 'shippingAddress', 'billingAddress', 'user'],
+    }) as any;
+
+    if (!original) {
+      return ctx.notFound('Order not found');
+    }
+
+    if (original.paymentStatus !== 'failed') {
+      return ctx.badRequest('Only orders with failed payment can be retried');
+    }
+
+    const retryCount = (Number(original.retryCount) || 0) + 1;
+    if (retryCount > MAX_RETRY_COUNT) {
+      return ctx.badRequest(
+        `Maximum retry limit (${MAX_RETRY_COUNT}) exceeded`
+      );
+    }
+
+    const rootOrderDocumentId =
+      original.originalOrder?.documentId ?? original.documentId;
+
+    const items = original.items ?? [];
+    if (!items.length) {
+      return ctx.badRequest('Order has no items');
+    }
+
+    const decrementedItems: Array<{
+      productId: number;
+      variantSku: string | null;
+      quantity: number;
+      mode: 'product' | 'variant';
+    }> = [];
+
+    for (const item of items) {
+      if (!item.productDocumentId) {
+        return ctx.badRequest('productDocumentId is required for each order item');
+      }
+
+      const product = await strapi.documents('api::product.product').findOne({
+        documentId: item.productDocumentId,
+        populate: ['variants'],
+      }) as any;
+
+      if (!product) {
+        return ctx.badRequest(`Product not found: ${item.productDocumentId}`);
+      }
+
+      const qty = Number(item.quantity) || 0;
+      if (qty <= 0) {
+        return ctx.badRequest(`Quantity must be positive for ${item.productName ?? 'product'}`);
+      }
+
+      if (item.variantSku) {
+        if (!product.variants || product.variants.length === 0) {
+          return ctx.badRequest(`Product ${product.name} has no variants`);
+        }
+        const variant = product.variants.find((v: any) => v.sku === item.variantSku);
+        if (!variant) {
+          return ctx.badRequest(`Variant not found: SKU ${item.variantSku}`);
+        }
+
+        const result = await strapi.db.connection.raw(
+          `UPDATE components_product_product_variants
+           SET inventory = inventory - :qty
+           WHERE entity_id = :pid AND sku = :sku AND inventory >= :qty
+           RETURNING id`,
+          { pid: Number(product.id), sku: item.variantSku, qty }
+        );
+
+        if (!result?.rows || result.rows.length === 0) {
+          await rollbackDecrements(strapi, decrementedItems);
+          return ctx.badRequest(
+            `Insufficient stock for ${product.name} (${variant.name}): requested ${qty}, insufficient stock`
+          );
+        }
+
+        decrementedItems.push({
+          productId: Number(product.id),
+          variantSku: item.variantSku,
+          quantity: qty,
+          mode: 'variant',
+        });
+      } else {
+        if (product.inventory < qty) {
+          return ctx.badRequest(
+            `Insufficient stock for ${product.name}: requested ${qty}, available ${product.inventory}`
+          );
+        }
+
+        const result = await strapi.db.connection.raw(
+          `UPDATE products
+           SET inventory = inventory - :qty
+           WHERE id = :id AND inventory >= :qty
+           RETURNING id`,
+          { id: Number(product.id), qty }
+        );
+
+        if (!result?.rows || result.rows.length === 0) {
+          await rollbackDecrements(strapi, decrementedItems);
+          return ctx.badRequest(
+            `Insufficient stock for ${product.name}: requested ${qty}, insufficient stock`
+          );
+        }
+
+        decrementedItems.push({
+          productId: Number(product.id),
+          variantSku: null,
+          quantity: qty,
+          mode: 'product',
+        });
+      }
+    }
+
+    const ts = Date.now();
+    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const orderNumber = `ORD-${ts}-${rand}`;
+
+    const shippingAddress = original.shippingAddress;
+    const userEntity = original.user;
+
+    let snapToken: string | null = null;
+    try {
+      const midtransService = strapi.service('api::midtrans.midtrans');
+
+      const customerFirstName = shippingAddress?.firstName
+        ?? userEntity?.firstname
+        ?? userEntity?.username
+        ?? 'Customer';
+
+      const customerEmail = shippingAddress?.email ?? userEntity?.email ?? '';
+      const customerPhone = shippingAddress?.phone ?? userEntity?.phone ?? '';
+
+      const productItems = items.map((item: any) => ({
+        id: item.productDocumentId + (item.variantSku ? `-${item.variantSku}` : ''),
+        price: Number(item.unitPrice ?? 0),
+        quantity: Number(item.quantity ?? 0),
+        name: item.productName ?? 'Product',
+      }));
+
+      const midtransItems = [...productItems];
+
+      if (Number(original.shippingCost ?? 0) > 0) {
+        midtransItems.push({
+          id: 'SHIPPING',
+          price: Number(original.shippingCost ?? 0),
+          quantity: 1,
+          name: 'Shipping Cost',
+        });
+      }
+
+      if (Number(original.tax ?? 0) > 0) {
+        midtransItems.push({
+          id: 'TAX',
+          price: Number(original.tax ?? 0),
+          quantity: 1,
+          name: 'Tax',
+        });
+      }
+
+      if (Number(original.discount ?? 0) > 0) {
+        midtransItems.push({
+          id: 'DISCOUNT',
+          price: -Number(original.discount ?? 0),
+          quantity: 1,
+          name: 'Discount',
+        });
+      }
+
+      const result = await midtransService.generateSnapToken({
+        orderId: orderNumber,
+        grossAmount: Number(original.totalAmount ?? 0),
+        customerDetails: {
+          firstName: customerFirstName,
+          email: customerEmail,
+          phone: customerPhone,
+        },
+        itemDetails: midtransItems,
+      });
+
+      snapToken = result.token;
+    } catch (err: any) {
+      strapi.log.error('Midtrans Snap token generation failed:', err);
+      await rollbackDecrements(strapi, decrementedItems);
+      return ctx.internalServerError('Payment gateway error: ' + (err.message ?? 'Unknown'));
+    }
+
+    const newItems = items.map((item: any) => ({
+      productDocumentId: item.productDocumentId,
+      variantSku: item.variantSku ?? null,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      totalPrice: item.totalPrice,
+      productName: item.productName,
+      productSku: item.productSku ?? null,
+      variantInfo: item.variantInfo ?? null,
+      imageUrl: item.imageUrl ?? null,
+    }));
+
+    const newShippingAddress = shippingAddress ? {
+      firstName: shippingAddress.firstName,
+      lastName: shippingAddress.lastName,
+      addressLine1: shippingAddress.addressLine1,
+      addressLine2: shippingAddress.addressLine2 ?? null,
+      city: shippingAddress.city,
+      state: shippingAddress.state,
+      postalCode: shippingAddress.postalCode,
+      country: shippingAddress.country,
+      phone: shippingAddress.phone ?? null,
+      email: shippingAddress.email ?? null,
+    } : undefined;
+
+    const newBillingAddress = original.billingAddress ? {
+      firstName: original.billingAddress.firstName,
+      lastName: original.billingAddress.lastName,
+      addressLine1: original.billingAddress.addressLine1,
+      addressLine2: original.billingAddress.addressLine2 ?? null,
+      city: original.billingAddress.city,
+      state: original.billingAddress.state,
+      postalCode: original.billingAddress.postalCode,
+      country: original.billingAddress.country,
+      phone: original.billingAddress.phone ?? null,
+      email: original.billingAddress.email ?? null,
+    } : undefined;
+
+    const entity = await strapi
+      .service('api::order.order')
+      .create({
+        data: {
+          orderNumber,
+          orderStatus: 'pending',
+          paymentStatus: 'pending',
+          subtotal: original.subtotal,
+          tax: original.tax,
+          shippingCost: original.shippingCost,
+          discount: original.discount,
+          totalAmount: original.totalAmount,
+          currency: original.currency,
+          items: newItems,
+          ...(newShippingAddress ? { shippingAddress: newShippingAddress } : {}),
+          ...(newBillingAddress ? { billingAddress: newBillingAddress } : {}),
+          midtransSnapToken: snapToken,
+          retryCount,
+          originalOrder: rootOrderDocumentId,
+          notes: original.notes ?? null,
+          ...(ctx.state.user ? { user: ctx.state.user.documentId } : {}),
+        },
+      });
+
+    const sanitizedEntity = await this.sanitizeOutput(entity, ctx);
+
+    return this.transformResponse(sanitizedEntity);
   },
 
   async delete(ctx) {

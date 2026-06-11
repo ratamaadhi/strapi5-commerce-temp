@@ -91,6 +91,16 @@
     "deliveredAt": {
       "type": "datetime"
     },
+    "retryCount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "originalOrder": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::order.order"
+    },
     "user": {
       "type": "relation",
       "relation": "manyToOne",
