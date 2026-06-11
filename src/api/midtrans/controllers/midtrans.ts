@@ -35,6 +35,15 @@ export default {
     }
 
     const order = orders[0];
+
+    if (order.orderStatus === 'cancelled' || order.orderStatus === 'refunded') {
+      strapi.log.warn(
+        `Midtrans webhook: order ${payload.order_id} already ${order.orderStatus}, notification ignored`
+      );
+      ctx.body = { status: 'ok', message: `Order already ${order.orderStatus}, notification ignored` };
+      return;
+    }
+
     const newPaymentStatus = service.mapPaymentStatus(payload.transaction_status);
 
     const updateData: any = {

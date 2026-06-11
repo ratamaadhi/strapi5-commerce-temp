@@ -130,7 +130,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           return ctx.badRequest(`Variant not found: SKU ${item.variantSku}`);
         }
 
-        const [result] = await strapi.db.connection.raw(
+        const result = await strapi.db.connection.raw(
           `UPDATE components_product_product_variants
            SET inventory = inventory - :qty
            WHERE entity_id = :pid AND sku = :sku AND inventory >= :qty
@@ -158,7 +158,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           );
         }
 
-        const [result] = await strapi.db.connection.raw(
+        const result = await strapi.db.connection.raw(
           `UPDATE products
            SET inventory = inventory - :qty
            WHERE id = :id AND inventory >= :qty
