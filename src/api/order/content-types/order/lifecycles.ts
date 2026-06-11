@@ -95,7 +95,7 @@ export default {
     const { result } = event;
 
     try {
-      const statusesToRestore = ['cancelled', 'refunded'];
+      const statusesToRestore = ['cancelled', 'refunded', 'failed'];
       const newOrderStatus = result.orderStatus;
       const newPaymentStatus = result.paymentStatus;
 
