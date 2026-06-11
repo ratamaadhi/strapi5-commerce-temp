@@ -16,7 +16,6 @@ RUN npm run build
 
 # Stage 2: Production
 FROM node:22-alpine
-RUN apk add --no-cache vips-dev
 ENV NODE_ENV=production
 
 WORKDIR /opt/
