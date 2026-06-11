@@ -4,6 +4,38 @@
 
 import { factories } from '@strapi/strapi';
 
+async function rollbackDecrements(
+  strapi: any,
+  items: Array<{
+    productId: number;
+    variantSku: string | null;
+    quantity: number;
+    mode: 'product' | 'variant';
+  }>
+) {
+  for (const item of items) {
+    try {
+      if (item.mode === 'variant' && item.variantSku) {
+        await strapi.db.connection.raw(
+          `UPDATE components_product_product_variants
+           SET inventory = inventory + :qty
+           WHERE entity_id = :pid AND sku = :sku`,
+          { pid: item.productId, sku: item.variantSku, qty: item.quantity }
+        );
+      } else {
+        await strapi.db.connection.raw(
+          `UPDATE products
+           SET inventory = inventory + :qty
+           WHERE id = :id`,
+          { id: item.productId, qty: item.quantity }
+        );
+      }
+    } catch (err: any) {
+      strapi.log.error('Rollback decrement failed:', err);
+    }
+  }
+}
+
 export default factories.createCoreController('api::order.order', ({ strapi }) => ({
   async find(ctx) {
     await this.validateQuery(ctx);
@@ -63,6 +95,13 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     const items = requestData.items ?? [];
     const shippingAddress = requestData.shippingAddress ?? null;
 
+    const decrementedItems: Array<{
+      productId: number;
+      variantSku: string | null;
+      quantity: number;
+      mode: 'product' | 'variant';
+    }> = [];
+
     for (const item of items) {
       if (!item.productDocumentId) {
         return ctx.badRequest('productDocumentId is required for each order item');
@@ -77,6 +116,11 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         return ctx.badRequest(`Product not found: ${item.productDocumentId}`);
       }
 
+      const qty = Number(item.quantity) || 0;
+      if (qty <= 0) {
+        return ctx.badRequest(`Quantity must be positive for ${item.productName ?? 'product'}`);
+      }
+
       if (item.variantSku) {
         if (!product.variants || product.variants.length === 0) {
           return ctx.badRequest(`Product ${product.name} has no variants`);
@@ -85,17 +129,56 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         if (!variant) {
           return ctx.badRequest(`Variant not found: SKU ${item.variantSku}`);
         }
-        if (variant.inventory < item.quantity) {
+
+        const [result] = await strapi.db.connection.raw(
+          `UPDATE components_product_product_variants
+           SET inventory = inventory - :qty
+           WHERE entity_id = :pid AND sku = :sku AND inventory >= :qty
+           RETURNING id`,
+          { pid: Number(product.id), sku: item.variantSku, qty }
+        );
+
+        if (!result?.rows || result.rows.length === 0) {
+          await rollbackDecrements(strapi, decrementedItems);
           return ctx.badRequest(
-            `Insufficient stock for ${product.name} (${variant.name}): requested ${item.quantity}, available ${variant.inventory}`
+            `Insufficient stock for ${product.name} (${variant.name}): requested ${qty}, insufficient stock`
           );
         }
+
+        decrementedItems.push({
+          productId: Number(product.id),
+          variantSku: item.variantSku,
+          quantity: qty,
+          mode: 'variant',
+        });
       } else {
-        if (product.inventory < item.quantity) {
+        if (product.inventory < qty) {
           return ctx.badRequest(
-            `Insufficient stock for ${product.name}: requested ${item.quantity}, available ${product.inventory}`
+            `Insufficient stock for ${product.name}: requested ${qty}, available ${product.inventory}`
           );
         }
+
+        const [result] = await strapi.db.connection.raw(
+          `UPDATE products
+           SET inventory = inventory - :qty
+           WHERE id = :id AND inventory >= :qty
+           RETURNING id`,
+          { id: Number(product.id), qty }
+        );
+
+        if (!result?.rows || result.rows.length === 0) {
+          await rollbackDecrements(strapi, decrementedItems);
+          return ctx.badRequest(
+            `Insufficient stock for ${product.name}: requested ${qty}, insufficient stock`
+          );
+        }
+
+        decrementedItems.push({
+          productId: Number(product.id),
+          variantSku: null,
+          quantity: qty,
+          mode: 'product',
+        });
       }
     }
 
@@ -171,6 +254,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       snapToken = result.token;
     } catch (err: any) {
       strapi.log.error('Midtrans Snap token generation failed:', err);
+      await rollbackDecrements(strapi, decrementedItems);
       return ctx.internalServerError('Payment gateway error: ' + (err.message ?? 'Unknown'));
     }
 
