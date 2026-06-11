@@ -32,10 +32,10 @@ async function rollbackDecrements(
             return v;
           });
 
-          await strapi.db.connection.raw(
-            `UPDATE products SET variants = ? WHERE id = ?`,
-            [JSON.stringify(updatedVariants), item.productId]
-          );
+          await strapi.db.query('api::product.product').update({
+            where: { id: item.productId },
+            data: { variants: updatedVariants },
+          });
         }
       } else {
         await strapi.db.connection.raw(
@@ -158,10 +158,10 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
         variant.inventory = currentStock - qty;
 
-        await strapi.db.connection.raw(
-          `UPDATE products SET variants = ? WHERE id = ?`,
-          [JSON.stringify(product.variants), Number(product.id)]
-        );
+        await strapi.db.query('api::product.product').update({
+          where: { id: Number(product.id) },
+          data: { variants: product.variants },
+        });
 
         decrementedItems.push({
           productId: Number(product.id),
@@ -513,10 +513,10 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
         variant.inventory = currentStock - qty;
 
-        await strapi.db.connection.raw(
-          `UPDATE products SET variants = ? WHERE id = ?`,
-          [JSON.stringify(product.variants), Number(product.id)]
-        );
+        await strapi.db.query('api::product.product').update({
+          where: { id: Number(product.id) },
+          data: { variants: product.variants },
+        });
 
         decrementedItems.push({
           productId: Number(product.id),

@@ -141,10 +141,10 @@ export default {
             const qty = Number(item.quantity) || 0;
             variant.inventory = Number(variant.inventory) + qty;
 
-            await strapi.db.connection.raw(
-              `UPDATE products SET variants = ? WHERE id = ?`,
-              [JSON.stringify(product.variants), Number(product.id)]
-            );
+            await strapi.db.query('api::product.product').update({
+              where: { id: Number(product.id) },
+              data: { variants: product.variants },
+            });
 
             strapi.log.info(
               `Restored variant ${variant.sku} inventory by ${qty}`
