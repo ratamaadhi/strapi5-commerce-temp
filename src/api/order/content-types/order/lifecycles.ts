@@ -141,10 +141,10 @@ export default {
             const qty = Number(item.quantity) || 0;
             variant.inventory = Number(variant.inventory) + qty;
 
-            await strapi.documents('api::product.product').update({
-              documentId: product.documentId,
-              data: { variants: product.variants },
-            });
+            await strapi.db.connection.raw(
+              `UPDATE products SET variants = ? WHERE id = ?`,
+              [JSON.stringify(product.variants), Number(product.id)]
+            );
 
             strapi.log.info(
               `Restored variant ${variant.sku} inventory by ${qty}`
@@ -152,12 +152,11 @@ export default {
           }
         } else {
           const qty = Number(item.quantity) || 0;
-          const newInventory = Number(product.inventory) + qty;
 
-          await strapi.documents('api::product.product').update({
-            documentId: product.documentId,
-            data: { inventory: newInventory },
-          });
+          await strapi.db.connection.raw(
+            `UPDATE products SET inventory = inventory + :qty WHERE id = :id`,
+            { id: Number(product.id), qty }
+          );
 
           strapi.log.info(
             `Restored product ${product.documentId} inventory by ${qty}`
