@@ -5,66 +5,6 @@ export default {
     try {
       const order = await strapi.documents('api::order.order').findOne({
         documentId: result.documentId,
-        populate: ['items'],
-      }) as any;
-
-      if (order.items && order.items.length > 0) {
-        for (const item of order.items) {
-          if (!item.productDocumentId) {
-            strapi.log.warn('Order item missing productDocumentId, skipping decrement');
-            continue;
-          }
-
-          const product = await strapi.documents('api::product.product').findOne({
-            documentId: item.productDocumentId,
-            populate: ['variants'],
-          }) as any;
-
-          if (!product) {
-            strapi.log.warn(`Product not found for decrement: ${item.productDocumentId}`);
-            continue;
-          }
-
-          if (item.variantSku && product.variants && product.variants.length > 0) {
-            const variantIndex = product.variants.findIndex(
-              (v: any) => v.sku === item.variantSku
-            );
-            if (variantIndex >= 0) {
-              const variant = product.variants[variantIndex];
-              const qty = Number(item.quantity) || 0;
-              variant.inventory = Math.max(0, Number(variant.inventory) - qty);
-
-              await strapi.documents('api::product.product').update({
-                documentId: product.documentId,
-                data: { variants: product.variants },
-              });
-
-              strapi.log.info(
-                `Decremented variant ${variant.sku} inventory by ${qty}`
-              );
-            }
-          } else {
-            const qty = Number(item.quantity) || 0;
-            const newInventory = Math.max(0, Number(product.inventory) - qty);
-
-            await strapi.documents('api::product.product').update({
-              documentId: product.documentId,
-              data: { inventory: newInventory },
-            });
-
-            strapi.log.info(
-              `Decremented product ${product.documentId} inventory by ${qty}`
-            );
-          }
-        }
-      }
-    } catch (err: any) {
-      strapi.log.error('Failed to decrement inventory on order create:', err);
-    }
-
-    try {
-      const order = await strapi.documents('api::order.order').findOne({
-        documentId: result.documentId,
         populate: ['user', 'items'],
       }) as any;
 
