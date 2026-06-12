@@ -126,6 +126,7 @@ export default {
 
         const product = await strapi.documents('api::product.product').findOne({
           documentId: item.productDocumentId,
+          status: 'published',
           populate: ['variants'],
         }) as any;
 
