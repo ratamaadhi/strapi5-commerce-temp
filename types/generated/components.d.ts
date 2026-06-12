@@ -140,7 +140,9 @@ export interface ProductProductVariant extends Struct.ComponentSchema {
         },
         number
       >;
-    sku: Schema.Attribute.Text & Schema.Attribute.Unique;
+    sku: Schema.Attribute.Text &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
   };
 }
 

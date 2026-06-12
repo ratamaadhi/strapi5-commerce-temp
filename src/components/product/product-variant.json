@@ -12,7 +12,7 @@
     },
     "sku": {
       "type": "text",
-      "required": false,
+      "required": true,
       "unique": true
     },
     "price": {
