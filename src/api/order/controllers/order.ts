@@ -450,8 +450,12 @@ export default factories.createCoreController(
         return ctx.notFound("Order not found");
       }
 
-      if (original.paymentStatus !== "failed") {
-        return ctx.badRequest("Only orders with failed payment can be retried");
+      if (original.paymentStatus !== "failed" || original.orderStatus !== "cancelled") {
+        const reason =
+          original.orderStatus === "cancelled"
+            ? "User-cancelled orders cannot be retried"
+            : "Only orders with failed payment can be retried";
+        return ctx.badRequest(reason);
       }
 
       const retryCount = (Number(original.retryCount) || 0) + 1;
