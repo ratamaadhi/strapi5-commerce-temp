@@ -716,6 +716,43 @@ export default factories.createCoreController(
       return this.transformResponse(sanitizedEntity);
     },
 
+    async cancel(ctx) {
+      const { documentId } = ctx.params;
+
+      const ownershipFilter = ctx.state.user
+        ? { user: { documentId: { $eq: ctx.state.user.documentId } } }
+        : {};
+
+      const existing = (await strapi.documents('api::order.order').findOne({
+        documentId,
+        filters: ownershipFilter,
+      })) as any;
+
+      if (!existing) {
+        return ctx.notFound('Order not found');
+      }
+
+      if (existing.orderStatus !== 'pending') {
+        return ctx.badRequest(
+          `Order cannot be cancelled (current status: ${existing.orderStatus})`,
+        );
+      }
+
+      if (existing.paymentStatus === 'paid') {
+        return ctx.badRequest(
+          'Order has been paid. Refund is not yet available.',
+        );
+      }
+
+      const result = await strapi
+        .service('api::order.order')
+        .cancelOrder(documentId);
+
+      const sanitizedEntity = await this.sanitizeOutput(result, ctx);
+
+      return this.transformResponse(sanitizedEntity);
+    },
+
     async delete(ctx) {
       const { id } = ctx.params;
 
