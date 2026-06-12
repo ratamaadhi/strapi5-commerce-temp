@@ -68,6 +68,10 @@ export default {
       updateData.paidAt = new Date().toISOString();
     }
 
+    if (newPaymentStatus === 'failed') {
+      updateData.orderStatus = 'cancelled';
+    }
+
     await strapi.documents('api::order.order').update({
       documentId: order.documentId,
       data: updateData,
