@@ -4,6 +4,87 @@ import * as path from 'node:path';
 
 export default {
   register({ strapi }: { strapi: Core.Strapi }) {
+    if (strapi.plugin('documentation')) {
+      const cancelEndpointOverride = {
+        info: { version: '1.0.0' },
+        paths: {
+          '/orders/{documentId}/cancel': {
+            post: {
+              tags: ['Order'],
+              operationId: 'post/orders/{documentId}/cancel',
+              parameters: [
+                {
+                  name: 'documentId',
+                  in: 'path',
+                  description: 'Document ID of the order to cancel',
+                  deprecated: false,
+                  required: true,
+                  schema: { type: 'string' },
+                },
+              ],
+              responses: {
+                '200': {
+                  description: 'Order cancelled successfully',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/OrderResponse' },
+                    },
+                  },
+                },
+                '400': {
+                  description: 'Bad Request – order cannot be cancelled or refund required',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '401': {
+                  description: 'Unauthorized',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '403': {
+                  description: 'Forbidden',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '404': {
+                  description: 'Not Found',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '500': {
+                  description: 'Internal Server Error',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      strapi
+        .plugin('documentation')
+        .service('override')
+        .registerOverride(cancelEndpointOverride, {
+          pluginOrigin: 'order',
+        });
+    }
+
     strapi.server.routes([
       {
         method: 'GET',
