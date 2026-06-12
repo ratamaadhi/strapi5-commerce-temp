@@ -505,6 +505,7 @@ export default factories.createCoreController(
           .documents("api::product.product")
           .findOne({
             documentId: item.productDocumentId,
+            status: 'published',
             populate: ["variants"],
           })) as any;
 
