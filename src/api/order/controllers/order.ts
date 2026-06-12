@@ -22,7 +22,7 @@ async function rollbackDecrements(
 ) {
   for (const item of items) {
     try {
-      if (item.mode === "variant" && item.variantSku && item.productId) {
+      if (item.mode === "variant" && item.variantSku && item.productDocumentId) {
         const product = (await strapi
           .documents("api::product.product")
           .findOne({
