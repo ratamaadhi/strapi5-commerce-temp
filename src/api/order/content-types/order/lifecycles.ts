@@ -94,16 +94,16 @@ export default {
   },
 
   async afterUpdate(event: any) {
-    const { result } = event;
+    const { result, params } = event;
 
     try {
       const statusesToRestore = ['cancelled', 'refunded', 'failed'];
-      const newOrderStatus = result.orderStatus;
-      const newPaymentStatus = result.paymentStatus;
 
-      const shouldRestore =
-        statusesToRestore.includes(newOrderStatus) ||
-        statusesToRestore.includes(newPaymentStatus);
+      const data = params?.data || {};
+      const paymentExplicitlyChanged = data.paymentStatus && statusesToRestore.includes(result.paymentStatus);
+      const orderExplicitlyChanged = data.orderStatus && statusesToRestore.includes(result.orderStatus);
+
+      const shouldRestore = paymentExplicitlyChanged || orderExplicitlyChanged;
 
       if (!shouldRestore) {
         return;

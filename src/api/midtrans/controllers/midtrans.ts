@@ -36,6 +36,8 @@ export default {
 
     const order = orders[0];
 
+    const newPaymentStatus = service.mapPaymentStatus(payload.transaction_status);
+
     if (order.orderStatus === 'cancelled' || order.orderStatus === 'refunded') {
       strapi.log.warn(
         `Midtrans webhook: order ${payload.order_id} already ${order.orderStatus}, notification ignored`
@@ -44,7 +46,16 @@ export default {
       return;
     }
 
-    const newPaymentStatus = service.mapPaymentStatus(payload.transaction_status);
+    if (order.paymentStatus === 'paid' || order.paymentStatus === 'failed' || order.paymentStatus === 'refunded') {
+      const isRefundTransition = order.paymentStatus === 'paid' && newPaymentStatus === 'refunded';
+      if (!isRefundTransition) {
+        strapi.log.warn(
+          `Midtrans webhook: order ${payload.order_id} payment already ${order.paymentStatus}, notification ignored`
+        );
+        ctx.body = { status: 'ok', message: `Payment already ${order.paymentStatus}, notification ignored` };
+        return;
+      }
+    }
 
     const updateData: any = {
       midtransTransactionId: payload.transaction_id,
