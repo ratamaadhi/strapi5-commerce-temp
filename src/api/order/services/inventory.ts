@@ -1,10 +1,5 @@
 const VARIANT_COMPONENT_UID = 'product.product-variant';
 
-interface VariantInventoryResult {
-  success: boolean;
-  affected: number;
-}
-
 function getVariantTableName(strapi: any): string {
   const meta = strapi.db.metadata.get(VARIANT_COMPONENT_UID);
   return meta.tableName;
@@ -12,26 +7,37 @@ function getVariantTableName(strapi: any): string {
 
 async function decrementVariantInventory(
   strapi: any,
-  variantId: number,
+  sku: string,
+  documentId: string,
   quantity: number
-): Promise<VariantInventoryResult> {
+): Promise<boolean> {
   const tableName = getVariantTableName(strapi);
-  const affected = await strapi.db.connection(tableName)
-    .where('id', variantId)
-    .where('inventory', '>=', quantity)
-    .decrement('inventory', quantity);
-  return { success: affected > 0, affected };
+  const [result] = await strapi.db.connection.raw(
+    `UPDATE ${tableName}
+     SET inventory = inventory - :qty
+     WHERE sku = :sku
+       AND entity_id IN (SELECT id FROM products WHERE document_id = :documentId)
+       AND inventory >= :qty`,
+    { sku, documentId, qty: quantity }
+  );
+  return result?.rowCount > 0;
 }
 
 async function incrementVariantInventory(
   strapi: any,
-  variantId: number,
+  sku: string,
+  documentId: string,
   quantity: number
 ): Promise<number> {
   const tableName = getVariantTableName(strapi);
-  return strapi.db.connection(tableName)
-    .where('id', variantId)
-    .increment('inventory', quantity);
+  const [result] = await strapi.db.connection.raw(
+    `UPDATE ${tableName}
+     SET inventory = inventory + :qty
+     WHERE sku = :sku
+       AND entity_id IN (SELECT id FROM products WHERE document_id = :documentId)`,
+    { sku, documentId, qty: quantity }
+  );
+  return result?.rowCount ?? 0;
 }
 
 export {
