@@ -13,8 +13,7 @@ const MAX_RETRY_COUNT = 3;
 async function rollbackDecrements(
   strapi: any,
   items: Array<{
-    productId: number;
-    productDocumentId?: string;
+    productDocumentId: string;
     variantSku: string | null;
     quantity: number;
     mode: "product" | "variant";
@@ -22,27 +21,12 @@ async function rollbackDecrements(
 ) {
   for (const item of items) {
     try {
-      if (item.mode === "variant" && item.variantSku && item.productDocumentId) {
-        const product = (await strapi
-          .documents("api::product.product")
-          .findOne({
-            documentId: item.productDocumentId,
-            status: 'published',
-            populate: ["variants"],
-          })) as any;
-
-        if (product && product.variants) {
-          const variant = product.variants.find(
-            (v: any) => v.sku === item.variantSku,
-          );
-          if (variant) {
-            await incrementVariantInventory(strapi, variant.id, item.quantity);
-          }
-        }
+      if (item.mode === "variant" && item.variantSku) {
+        await incrementVariantInventory(strapi, item.variantSku, item.productDocumentId, item.quantity);
       } else {
         await strapi.db.connection.raw(
-          `UPDATE products SET inventory = inventory + :qty WHERE id = :id`,
-          { id: item.productId, qty: item.quantity },
+          `UPDATE products SET inventory = inventory + :qty WHERE document_id = :documentId`,
+          { documentId: item.productDocumentId, qty: item.quantity },
         );
       }
     } catch (err: any) {
