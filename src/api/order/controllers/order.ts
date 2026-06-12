@@ -470,8 +470,7 @@ export default factories.createCoreController(
       }
 
       const decrementedItems: Array<{
-        productId: number;
-        productDocumentId?: string;
+        productDocumentId: string;
         variantSku: string | null;
         quantity: number;
         mode: "product" | "variant";
@@ -514,12 +513,13 @@ export default factories.createCoreController(
             return ctx.badRequest(`Variant not found: SKU ${item.variantSku}`);
           }
 
-          const result = await decrementVariantInventory(
+          const success = await decrementVariantInventory(
             strapi,
-            variant.id,
+            item.variantSku,
+            item.productDocumentId,
             qty,
           );
-          if (!result.success) {
+          if (!success) {
             await rollbackDecrements(strapi, decrementedItems);
             return ctx.badRequest(
               `Insufficient stock for ${product.name} (${variant.name}): requested ${qty}`,
@@ -527,7 +527,6 @@ export default factories.createCoreController(
           }
 
           decrementedItems.push({
-            productId: Number(product.id),
             productDocumentId: item.productDocumentId,
             variantSku: item.variantSku,
             quantity: qty,
@@ -543,9 +542,9 @@ export default factories.createCoreController(
           const result = await strapi.db.connection.raw(
             `UPDATE products
            SET inventory = inventory - :qty
-           WHERE id = :id AND inventory >= :qty
-           RETURNING id`,
-            { id: Number(product.id), qty },
+           WHERE document_id = :documentId AND inventory >= :qty
+           RETURNING document_id`,
+            { documentId: item.productDocumentId, qty },
           );
 
           if (!result?.rows || result.rows.length === 0) {
@@ -556,7 +555,7 @@ export default factories.createCoreController(
           }
 
           decrementedItems.push({
-            productId: Number(product.id),
+            productDocumentId: item.productDocumentId,
             variantSku: null,
             quantity: qty,
             mode: "product",
