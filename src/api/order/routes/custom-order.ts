@@ -10,5 +10,10 @@ export default {
       path: '/orders/:documentId/retry',
       handler: 'order.retryOrder',
     },
+    {
+      method: 'POST',
+      path: '/orders/:documentId/cancel',
+      handler: 'order.cancel',
+    },
   ],
 };
