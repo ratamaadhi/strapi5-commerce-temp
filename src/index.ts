@@ -66,6 +66,8 @@ export default {
 
         if (fs.existsSync(specFile)) {
           const spec = JSON.parse(fs.readFileSync(specFile, 'utf-8'));
+
+          // 1. POST /orders/{documentId}/cancel
           spec.paths['/orders/{documentId}/cancel'] = {
             post: {
               tags: ['Order'],
@@ -90,7 +92,8 @@ export default {
                   },
                 },
                 '400': {
-                  description: 'Bad Request – order cannot be cancelled or refund required',
+                  description:
+                    'Bad Request – order cannot be cancelled or refund required',
                   content: {
                     'application/json': {
                       schema: { $ref: '#/components/schemas/Error' },
@@ -132,8 +135,536 @@ export default {
               },
             },
           };
+
+          // 2. POST /orders/{documentId}/regenerate-snap-token
+          spec.paths['/orders/{documentId}/regenerate-snap-token'] = {
+            post: {
+              tags: ['Order'],
+              operationId: 'post/orders/{documentId}/regenerateSnapToken',
+              parameters: [
+                {
+                  name: 'documentId',
+                  in: 'path',
+                  description: 'Document ID of the order',
+                  deprecated: false,
+                  required: true,
+                  schema: { type: 'string' },
+                },
+              ],
+              responses: {
+                '200': {
+                  description:
+                    'Snap token regenerated successfully. Returns snapToken and redirectUrl.',
+                  content: {
+                    'application/json': {
+                      schema: {
+                        type: 'object',
+                        properties: {
+                          snapToken: { type: 'string' },
+                          redirectUrl: { type: 'string' },
+                        },
+                      },
+                    },
+                  },
+                },
+                '400': {
+                  description:
+                    'Bad Request – order cancelled/refunded or payment already processed',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '401': {
+                  description: 'Unauthorized',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '403': {
+                  description: 'Forbidden',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '404': {
+                  description: 'Not Found',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '500': {
+                  description: 'Internal Server Error',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+              },
+            },
+          };
+
+          // 3. POST /orders/{documentId}/retry
+          spec.paths['/orders/{documentId}/retry'] = {
+            post: {
+              tags: ['Order'],
+              operationId: 'post/orders/{documentId}/retry',
+              parameters: [
+                {
+                  name: 'documentId',
+                  in: 'path',
+                  description:
+                    'Document ID of the failed order to retry',
+                  deprecated: false,
+                  required: true,
+                  schema: { type: 'string' },
+                },
+              ],
+              responses: {
+                '200': {
+                  description:
+                    'New order created successfully as a retry of a failed payment',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/OrderResponse' },
+                    },
+                  },
+                },
+                '400': {
+                  description:
+                    'Bad Request – order payment did not fail, max retry exceeded, or insufficient stock',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '401': {
+                  description: 'Unauthorized',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '403': {
+                  description: 'Forbidden',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '404': {
+                  description: 'Not Found',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '500': {
+                  description: 'Internal Server Error',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+              },
+            },
+          };
+
+          // 4. POST /midtrans/webhook
+          spec.paths['/midtrans/webhook'] = {
+            post: {
+              tags: ['Midtrans'],
+              operationId: 'post/midtrans/webhook',
+              security: [],
+              requestBody: {
+                required: true,
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        order_id: {
+                          type: 'string',
+                          description: 'Order number (ORD-xxx)',
+                        },
+                        transaction_id: { type: 'string' },
+                        transaction_status: {
+                          type: 'string',
+                          description:
+                            'settlement, capture, pending, deny, expire, cancel, refund, partial_refund',
+                        },
+                        payment_type: { type: 'string' },
+                        gross_amount: { type: 'string' },
+                        status_code: { type: 'string' },
+                        signature_key: { type: 'string' },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                '200': {
+                  description: 'Webhook acknowledged',
+                  content: {
+                    'application/json': {
+                      schema: {
+                        type: 'object',
+                        properties: {
+                          status: { type: 'string', example: 'ok' },
+                          message: { type: 'string' },
+                        },
+                      },
+                    },
+                  },
+                },
+                '403': {
+                  description: 'Invalid signature',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '500': {
+                  description: 'Internal Server Error',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+              },
+            },
+          };
+
+          // 5. GET /users/me/addresses
+          spec.paths['/users/me/addresses'] = {
+            get: {
+              tags: ['Address'],
+              operationId: 'get/users/me/addresses',
+              responses: {
+                '200': {
+                  description: 'List of user addresses',
+                  content: {
+                    'application/json': {
+                      schema: {
+                        $ref: '#/components/schemas/AddressListResponse',
+                      },
+                    },
+                  },
+                },
+                '401': {
+                  description: 'Unauthorized',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '500': {
+                  description: 'Internal Server Error',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              tags: ['Address'],
+              operationId: 'post/users/me/addresses',
+              requestBody: {
+                required: true,
+                content: {
+                  'application/json': {
+                    schema: {
+                      $ref: '#/components/schemas/AddressRequest',
+                    },
+                  },
+                },
+              },
+              responses: {
+                '200': {
+                  description: 'Address created',
+                  content: {
+                    'application/json': {
+                      schema: {
+                        $ref: '#/components/schemas/AddressResponse',
+                      },
+                    },
+                  },
+                },
+                '400': {
+                  description: 'Bad Request',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '401': {
+                  description: 'Unauthorized',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '500': {
+                  description: 'Internal Server Error',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+              },
+            },
+          };
+
+          // 6. GET /users/me/addresses/{documentId}
+          spec.paths['/users/me/addresses/{documentId}'] = {
+            get: {
+              tags: ['Address'],
+              operationId: 'get/users/me/addresses/{documentId}',
+              parameters: [
+                {
+                  name: 'documentId',
+                  in: 'path',
+                  description: 'Document ID of the address',
+                  deprecated: false,
+                  required: true,
+                  schema: { type: 'string' },
+                },
+              ],
+              responses: {
+                '200': {
+                  description: 'Address details',
+                  content: {
+                    'application/json': {
+                      schema: {
+                        $ref: '#/components/schemas/AddressResponse',
+                      },
+                    },
+                  },
+                },
+                '401': {
+                  description: 'Unauthorized',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '404': {
+                  description: 'Not Found',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '500': {
+                  description: 'Internal Server Error',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+              },
+            },
+            put: {
+              tags: ['Address'],
+              operationId: 'put/users/me/addresses/{documentId}',
+              parameters: [
+                {
+                  name: 'documentId',
+                  in: 'path',
+                  description: 'Document ID of the address',
+                  deprecated: false,
+                  required: true,
+                  schema: { type: 'string' },
+                },
+              ],
+              requestBody: {
+                required: true,
+                content: {
+                  'application/json': {
+                    schema: {
+                      $ref: '#/components/schemas/AddressRequest',
+                    },
+                  },
+                },
+              },
+              responses: {
+                '200': {
+                  description: 'Address updated',
+                  content: {
+                    'application/json': {
+                      schema: {
+                        $ref: '#/components/schemas/AddressResponse',
+                      },
+                    },
+                  },
+                },
+                '400': {
+                  description: 'Bad Request',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '401': {
+                  description: 'Unauthorized',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '404': {
+                  description: 'Not Found',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '500': {
+                  description: 'Internal Server Error',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+              },
+            },
+            delete: {
+              tags: ['Address'],
+              operationId: 'delete/users/me/addresses/{documentId}',
+              parameters: [
+                {
+                  name: 'documentId',
+                  in: 'path',
+                  description: 'Document ID of the address',
+                  deprecated: false,
+                  required: true,
+                  schema: { type: 'string' },
+                },
+              ],
+              responses: {
+                '200': {
+                  description: 'Address deleted',
+                  content: {
+                    'application/json': {
+                      schema: {
+                        $ref: '#/components/schemas/AddressResponse',
+                      },
+                    },
+                  },
+                },
+                '401': {
+                  description: 'Unauthorized',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '404': {
+                  description: 'Not Found',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '500': {
+                  description: 'Internal Server Error',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+              },
+            },
+          };
+
+          // 7. PATCH /users/me/addresses/{documentId}/make-default
+          spec.paths['/users/me/addresses/{documentId}/make-default'] = {
+            patch: {
+              tags: ['Address'],
+              operationId: 'patch/users/me/addresses/{documentId}/make-default',
+              parameters: [
+                {
+                  name: 'documentId',
+                  in: 'path',
+                  description:
+                    'Document ID of the address to set as default',
+                  deprecated: false,
+                  required: true,
+                  schema: { type: 'string' },
+                },
+              ],
+              responses: {
+                '200': {
+                  description: 'Address set as default',
+                  content: {
+                    'application/json': {
+                      schema: {
+                        $ref: '#/components/schemas/AddressResponse',
+                      },
+                    },
+                  },
+                },
+                '401': {
+                  description: 'Unauthorized',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '404': {
+                  description: 'Not Found',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+                '500': {
+                  description: 'Internal Server Error',
+                  content: {
+                    'application/json': {
+                      schema: { $ref: '#/components/schemas/Error' },
+                    },
+                  },
+                },
+              },
+            },
+          };
+
           fs.writeFileSync(specFile, JSON.stringify(spec, null, 2));
-          strapi.log.info('Cancel endpoint injected into OpenAPI spec');
+          strapi.log.info('Custom endpoints injected into OpenAPI spec');
         }
       } catch {
         // Non-fatal
