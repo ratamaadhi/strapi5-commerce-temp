@@ -124,40 +124,17 @@ export default {
           continue;
         }
 
-        const product = await strapi.documents('api::product.product').findOne({
-          documentId: item.productDocumentId,
-          status: 'published',
-          populate: ['variants'],
-        }) as any;
-
-        if (!product) {
-          strapi.log.warn(`Product not found for restore: ${item.productDocumentId}`);
-          continue;
-        }
-
-        if (item.variantSku && product.variants && product.variants.length > 0) {
-          const variant = product.variants.find(
-            (v: any) => v.sku === item.variantSku
-          );
-          if (variant) {
-            const qty = Number(item.quantity) || 0;
-            await incrementVariantInventory(strapi, variant.id, qty);
-
-            strapi.log.info(
-              `Restored variant ${variant.sku} inventory by ${qty}`
-            );
-          }
+        if (item.variantSku) {
+          const qty = Number(item.quantity) || 0;
+          await incrementVariantInventory(strapi, item.variantSku, item.productDocumentId, qty);
+          strapi.log.info(`Restored variant ${item.variantSku} inventory by ${qty}`);
         } else {
           const qty = Number(item.quantity) || 0;
-
           await strapi.db.connection.raw(
-            `UPDATE products SET inventory = inventory + :qty WHERE id = :id`,
-            { id: Number(product.id), qty }
+            `UPDATE products SET inventory = inventory + :qty WHERE document_id = :documentId`,
+            { documentId: item.productDocumentId, qty }
           );
-
-          strapi.log.info(
-            `Restored product ${product.documentId} inventory by ${qty}`
-          );
+          strapi.log.info(`Restored product ${item.productDocumentId} inventory by ${qty}`);
         }
       }
     } catch (err: any) {
