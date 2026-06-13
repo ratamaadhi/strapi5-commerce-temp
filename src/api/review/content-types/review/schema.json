@@ -43,6 +43,13 @@
       "type": "biginteger",
       "default": "0"
     },
+    "isAnonymous": {
+      "type": "boolean",
+      "default": false
+    },
+    "displayName": {
+      "type": "string"
+    },
     "product": {
       "type": "relation",
       "relation": "manyToOne",

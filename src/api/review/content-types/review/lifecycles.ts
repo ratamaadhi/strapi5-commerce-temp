@@ -13,6 +13,10 @@ export default {
 
     data.user = user.id;
 
+    // Set anonymous review state
+    data.isAnonymous = data.isAnonymous ?? false;
+    data.displayName = data.isAnonymous ? null : (user.username || null);
+
     // Baca product documentId dari raw request body (data.product sudah dikonversi oleh Document Service)
     const rawBody = ctx?.request?.body;
     const productDocumentId = rawBody?.data?.product || rawBody?.product;
@@ -34,6 +38,10 @@ export default {
     if (data?.user !== undefined) {
       strapi.log.warn('Non-admin attempted to modify user field - stripped');
       delete data.user;
+    }
+    if (data?.isAnonymous !== undefined) {
+      strapi.log.warn('Non-admin attempted to modify isAnonymous field - stripped');
+      delete data.isAnonymous;
     }
   },
 };
