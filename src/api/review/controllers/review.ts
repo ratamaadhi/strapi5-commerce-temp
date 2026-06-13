@@ -36,11 +36,13 @@ export default factories.createCoreController('api::review.review', ({ strapi })
   async update(ctx) {
     const { data } = ctx.request.body;
 
-    // Strip verified from request - only admin endpoint can change it
-    if (data && data.verified !== undefined) {
-      const { verified: _, ...cleanData } = data;
+    if (data) {
+      // Strip fields that should only be set server-side
+      const { verified: _, user: __, ...cleanData } = data;
       ctx.request.body = { data: cleanData };
-      strapi.log.warn('Attempted to set verified via update endpoint - stripped');
+      if (data.verified !== undefined || data.user !== undefined) {
+        strapi.log.warn('Attempted to set protected fields (verified/user) via update endpoint - stripped');
+      }
     }
 
     return super.update(ctx);
