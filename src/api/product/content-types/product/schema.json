@@ -69,12 +69,6 @@
       "target": "api::category.category",
       "mappedBy": "products"
     },
-    "reviews": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::review.review",
-      "mappedBy": "product"
-    },
     "variants": {
       "type": "component",
       "component": "product.product-variant",
@@ -90,6 +84,12 @@
       "component": "product.dimensions",
       "repeatable": false,
       "required": true
+    },
+    "reviews": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::review.review",
+      "mappedBy": "product"
     }
   }
 }
