@@ -11,7 +11,7 @@ export default factories.createCoreController('api::review.review', ({ strapi })
 
     // Strip verified from request - will be computed server-side
     const { verified: _, ...cleanData } = data;
-    const userId = typeof user.id === 'string' ? user.id : user.id;
+    const userId = user.id;
 
     // Set user to authenticated user
     cleanData.user = userId;
