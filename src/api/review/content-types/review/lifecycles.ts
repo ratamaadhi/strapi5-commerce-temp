@@ -13,7 +13,10 @@ export default {
 
     data.user = user.id;
 
-    data.verified = await reviewService.checkUserPurchase(user.id, data.product);
+    // Baca product documentId dari raw request body (data.product sudah dikonversi oleh Document Service)
+    const rawBody = ctx?.request?.body;
+    const productDocumentId = rawBody?.data?.product || rawBody?.product;
+    data.verified = await reviewService.checkUserPurchase(user.id, productDocumentId);
   },
 
   async beforeUpdate(event: any) {
