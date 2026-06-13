@@ -84,4 +84,23 @@ export default ({ strapi }: { strapi: any }) => ({
     };
     return mapping[midtransStatus] ?? 'pending';
   },
+
+  async cancelTransaction(token: string): Promise<void> {
+    const response = await fetch(
+      `${this.getSnapUrl()}/${token}/cancel`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: this.getAuthHeader(),
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Midtrans cancel API error: ${response.status} ${errorText}`);
+    }
+  },
 });

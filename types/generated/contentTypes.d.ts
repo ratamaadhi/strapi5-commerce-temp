@@ -586,7 +586,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     originalOrder: Schema.Attribute.Relation<'manyToOne', 'api::order.order'>;
     paidAt: Schema.Attribute.DateTime;
     paymentStatus: Schema.Attribute.Enumeration<
-      ['pending', 'paid', 'failed', 'refunded']
+      ['pending', 'paid', 'failed', 'refunded', 'cancelled']
     >;
     publishedAt: Schema.Attribute.DateTime;
     retryCount: Schema.Attribute.Integer &

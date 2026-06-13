@@ -33,7 +33,8 @@
         "pending",
         "paid",
         "failed",
-        "refunded"
+        "refunded",
+        "cancelled"
       ]
     },
     "subtotal": {
