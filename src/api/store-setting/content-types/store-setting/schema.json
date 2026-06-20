@@ -1,0 +1,19 @@
+{
+  "kind": "singleType",
+  "collectionName": "store_setting",
+  "info": {
+    "singularName": "store-setting",
+    "pluralName": "store-settings",
+    "displayName": "Store Setting"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "whatsappNumber": {
+      "type": "string",
+      "description": "Nomor WhatsApp admin dengan kode negara, tanpa '+'. Contoh: 628123456789"
+    }
+  }
+}
