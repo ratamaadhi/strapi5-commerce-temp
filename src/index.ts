@@ -670,5 +670,14 @@ export default {
         // Non-fatal
       }
     }
+
+    // UNIQUE(user_id, product_id) on wishlist_items
+    try {
+      await strapi.db.connection.raw(
+        'CREATE UNIQUE INDEX IF NOT EXISTS wishlist_items_user_product_unique ON wishlist_items(user_id, product_id)'
+      );
+    } catch (err: any) {
+      strapi.log.warn(`Could not create wishlist unique constraint: ${err.message}`);
+    }
   },
 };

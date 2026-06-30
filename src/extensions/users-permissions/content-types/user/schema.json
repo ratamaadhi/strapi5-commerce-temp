@@ -83,6 +83,12 @@
       "relation": "oneToMany",
       "target": "api::address.address",
       "mappedBy": "user"
+    },
+    "wishlistItems": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::wishlist-item.wishlist-item",
+      "mappedBy": "user"
     }
   }
 }

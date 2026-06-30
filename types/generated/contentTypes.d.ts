@@ -679,6 +679,10 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     variants: Schema.Attribute.Component<'product.product-variant', true>;
+    wishlistItems: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::wishlist-item.wishlist-item'
+    >;
   };
 }
 
@@ -759,6 +763,39 @@ export interface ApiStoreSettingStoreSetting extends Struct.SingleTypeSchema {
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     whatsappNumber: Schema.Attribute.String;
+  };
+}
+
+export interface ApiWishlistItemWishlistItem
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'wishlist_items';
+  info: {
+    displayName: 'Wishlist Item';
+    pluralName: 'wishlist-items';
+    singularName: 'wishlist-item';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::wishlist-item.wishlist-item'
+    > &
+      Schema.Attribute.Private;
+    product: Schema.Attribute.Relation<'manyToOne', 'api::product.product'>;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
   };
 }
 
@@ -1261,6 +1298,10 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 3;
       }>;
+    wishlistItems: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::wishlist-item.wishlist-item'
+    >;
   };
 }
 
@@ -1282,6 +1323,7 @@ declare module '@strapi/strapi' {
       'api::product.product': ApiProductProduct;
       'api::review.review': ApiReviewReview;
       'api::store-setting.store-setting': ApiStoreSettingStoreSetting;
+      'api::wishlist-item.wishlist-item': ApiWishlistItemWishlistItem;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

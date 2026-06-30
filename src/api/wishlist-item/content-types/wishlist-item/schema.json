@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "wishlist_items",
+  "info": {
+    "singularName": "wishlist-item",
+    "pluralName": "wishlist-items",
+    "displayName": "Wishlist Item"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "wishlistItems"
+    },
+    "product": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product.product",
+      "inversedBy": "wishlistItems"
+    }
+  }
+}
