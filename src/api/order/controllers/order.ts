@@ -200,6 +200,30 @@ export default factories.createCoreController(
           })) as any)
         : null;
 
+      // Buat Order dulu — beforeCreate hook (Task 4) recompute unitPrice/
+      // subtotal/discount/totalAmount dari harga produk & voucher di DB,
+      // sehingga Midtrans di bawah SELALU pakai angka yang sudah tervalidasi,
+      // bukan requestData.totalAmount mentah dari client.
+      let createdOrder: any;
+      try {
+        createdOrder = await strapi.service("api::order.order").create({
+          ...sanitizedQueryParams,
+          data: {
+            orderNumber,
+            ...requestData,
+            ...(ctx.state.user ? { user: ctx.state.user.documentId } : {}),
+          },
+        });
+      } catch (err: any) {
+        await rollbackDecrements(strapi, decrementedItems);
+        return ctx.badRequest(err.message ?? "Order validation failed");
+      }
+
+      const order = (await strapi.documents("api::order.order").findOne({
+        documentId: createdOrder.documentId,
+        populate: ["items"],
+      })) as any;
+
       let snapToken: string | null = null;
       try {
         const midtransService = strapi.service("api::midtrans.midtrans");
@@ -213,7 +237,7 @@ export default factories.createCoreController(
         const customerEmail = shippingAddress?.email ?? userEntity?.email ?? "";
         const customerPhone = shippingAddress?.phone ?? userEntity?.phone ?? "";
 
-        const productItems = items.map((item: any) => ({
+        const productItems = (order.items ?? []).map((item: any) => ({
           id:
             item.productDocumentId +
             (item.variantSku ? `-${item.variantSku}` : ""),
@@ -224,36 +248,36 @@ export default factories.createCoreController(
 
         const midtransItems = [...productItems];
 
-        if (Number(requestData.shippingCost ?? 0) > 0) {
+        if (Number(order.shippingCost ?? 0) > 0) {
           midtransItems.push({
             id: "SHIPPING",
-            price: Number(requestData.shippingCost ?? 0),
+            price: Number(order.shippingCost ?? 0),
             quantity: 1,
             name: "Shipping Cost",
           });
         }
 
-        if (Number(requestData.tax ?? 0) > 0) {
+        if (Number(order.tax ?? 0) > 0) {
           midtransItems.push({
             id: "TAX",
-            price: Number(requestData.tax ?? 0),
+            price: Number(order.tax ?? 0),
             quantity: 1,
             name: "Tax",
           });
         }
 
-        if (Number(requestData.discount ?? 0) > 0) {
+        if (Number(order.discount ?? 0) > 0) {
           midtransItems.push({
             id: "DISCOUNT",
-            price: -Number(requestData.discount ?? 0),
+            price: -Number(order.discount ?? 0),
             quantity: 1,
             name: "Discount",
           });
         }
 
         const result = await midtransService.generateSnapToken({
-          orderId: orderNumber,
-          grossAmount: Number(requestData.totalAmount ?? 0),
+          orderId: order.orderNumber,
+          grossAmount: Number(order.totalAmount ?? 0),
           customerDetails: {
             firstName: customerFirstName,
             email: customerEmail,
@@ -265,23 +289,27 @@ export default factories.createCoreController(
         snapToken = result.token;
       } catch (err: any) {
         strapi.log.error("Midtrans Snap token generation failed:", err);
-        await rollbackDecrements(strapi, decrementedItems);
+        // JANGAN panggil rollbackDecrements() di sini juga — men-set orderStatus/
+        // paymentStatus ke 'cancelled'/'failed' lewat .update() ini sudah memicu
+        // afterUpdate hook (lifecycles.ts) yang me-restore inventory berdasarkan
+        // order.items. Memanggil rollbackDecrements() (yang me-restore dari
+        // decrementedItems, item & qty yang SAMA) di atasnya akan menggandakan
+        // restore inventory (double-refund) — order lain jadi kelebihan stok.
+        await strapi.documents("api::order.order").update({
+          documentId: order.documentId,
+          data: { orderStatus: "cancelled", paymentStatus: "failed" },
+        });
         return ctx.internalServerError(
           "Payment gateway error: " + (err.message ?? "Unknown"),
         );
       }
 
-      const entity = await strapi.service("api::order.order").create({
-        ...sanitizedQueryParams,
-        data: {
-          orderNumber,
-          ...requestData,
-          midtransSnapToken: snapToken,
-          ...(ctx.state.user ? { user: ctx.state.user.documentId } : {}),
-        },
+      const finalOrder = await strapi.documents("api::order.order").update({
+        documentId: order.documentId,
+        data: { midtransSnapToken: snapToken },
       });
 
-      const sanitizedEntity = await this.sanitizeOutput(entity, ctx);
+      const sanitizedEntity = await this.sanitizeOutput(finalOrder, ctx);
 
       return this.transformResponse(sanitizedEntity);
     },
@@ -306,9 +334,27 @@ export default factories.createCoreController(
         return ctx.notFound();
       }
 
+      // Hanya field customer-safe yang boleh diubah lewat endpoint ini.
+      // Field finansial/status/relasi (totalAmount, subtotal, discount,
+      // items, voucher, orderStatus, paymentStatus, midtransSnapToken, dst.)
+      // TIDAK PERNAH di-forward ke sini, apa pun yang dikirim client — order
+      // yang sudah dibuat tetap immutable dari sisi angka, hanya beforeCreate
+      // (sekali, saat create) yang boleh menentukan nilai-nilai itu. Ini
+      // menutup celah PUT /api/orders/:id + regenerate-snap-token yang bisa
+      // dipakai untuk menimpa totalAmount lalu men-charge Midtrans dengan
+      // angka yang sudah dimanipulasi.
+      const ALLOWED_UPDATE_FIELDS = ["shippingAddress", "billingAddress", "notes"] as const;
+      const requestBody = ctx.request.body?.data ?? ctx.request.body ?? {};
+      const safeData: Record<string, unknown> = {};
+      for (const field of ALLOWED_UPDATE_FIELDS) {
+        if (requestBody[field] !== undefined) {
+          safeData[field] = requestBody[field];
+        }
+      }
+
       const entity = await strapi.service("api::order.order").update(id, {
         ...sanitizedQueryParams,
-        data: ctx.request.body,
+        data: safeData,
       });
 
       const sanitizedEntity = await this.sanitizeOutput(entity, ctx);
@@ -443,7 +489,7 @@ export default factories.createCoreController(
         ...(Object.keys(ownershipFilter).length
           ? { filters: ownershipFilter }
           : {}),
-        populate: ["items", "shippingAddress", "billingAddress", "user"],
+        populate: ["items", "shippingAddress", "billingAddress", "user", "voucher"],
       })) as any;
 
       if (!original) {
@@ -572,78 +618,6 @@ export default factories.createCoreController(
       const orderNumber = `ORD-${ts}-${rand}`;
 
       const shippingAddress = original.shippingAddress;
-      const userEntity = original.user;
-
-      let snapToken: string | null = null;
-      try {
-        const midtransService = strapi.service("api::midtrans.midtrans");
-
-        const customerFirstName =
-          shippingAddress?.firstName ??
-          userEntity?.firstname ??
-          userEntity?.username ??
-          "Customer";
-
-        const customerEmail = shippingAddress?.email ?? userEntity?.email ?? "";
-        const customerPhone = shippingAddress?.phone ?? userEntity?.phone ?? "";
-
-        const productItems = items.map((item: any) => ({
-          id:
-            item.productDocumentId +
-            (item.variantSku ? `-${item.variantSku}` : ""),
-          price: Number(item.unitPrice ?? 0),
-          quantity: Number(item.quantity ?? 0),
-          name: item.productName ?? "Product",
-        }));
-
-        const midtransItems = [...productItems];
-
-        if (Number(original.shippingCost ?? 0) > 0) {
-          midtransItems.push({
-            id: "SHIPPING",
-            price: Number(original.shippingCost ?? 0),
-            quantity: 1,
-            name: "Shipping Cost",
-          });
-        }
-
-        if (Number(original.tax ?? 0) > 0) {
-          midtransItems.push({
-            id: "TAX",
-            price: Number(original.tax ?? 0),
-            quantity: 1,
-            name: "Tax",
-          });
-        }
-
-        if (Number(original.discount ?? 0) > 0) {
-          midtransItems.push({
-            id: "DISCOUNT",
-            price: -Number(original.discount ?? 0),
-            quantity: 1,
-            name: "Discount",
-          });
-        }
-
-        const result = await midtransService.generateSnapToken({
-          orderId: orderNumber,
-          grossAmount: Number(original.totalAmount ?? 0),
-          customerDetails: {
-            firstName: customerFirstName,
-            email: customerEmail,
-            phone: customerPhone,
-          },
-          itemDetails: midtransItems,
-        });
-
-        snapToken = result.token;
-      } catch (err: any) {
-        strapi.log.error("Midtrans Snap token generation failed:", err);
-        await rollbackDecrements(strapi, decrementedItems);
-        return ctx.internalServerError(
-          "Payment gateway error: " + (err.message ?? "Unknown"),
-        );
-      }
 
       const newItems = items.map((item: any) => ({
         productDocumentId: item.productDocumentId,
@@ -687,31 +661,131 @@ export default factories.createCoreController(
           }
         : undefined;
 
-      const entity = await strapi.service("api::order.order").create({
-        data: {
-          orderNumber,
-          orderStatus: "pending",
-          paymentStatus: "pending",
-          subtotal: original.subtotal,
-          tax: original.tax,
-          shippingCost: original.shippingCost,
-          discount: original.discount,
-          totalAmount: original.totalAmount,
-          currency: original.currency,
-          items: newItems,
-          ...(newShippingAddress
-            ? { shippingAddress: newShippingAddress }
-            : {}),
-          ...(newBillingAddress ? { billingAddress: newBillingAddress } : {}),
-          midtransSnapToken: snapToken,
-          retryCount,
-          originalOrder: rootOrderDocumentId,
-          notes: original.notes ?? null,
-          ...(ctx.state.user ? { user: ctx.state.user.documentId } : {}),
-        },
+      // Buat Order retry dulu (dengan voucher dibawa serta) — beforeCreate
+      // hook (Task 4) recompute & RE-VALIDATE penuh dari kondisi TERKINI
+      // (harga produk & status voucher bisa saja berubah sejak percobaan
+      // pertama), bukan trust angka original apa adanya.
+      let createdOrder: any;
+      try {
+        createdOrder = await strapi.service("api::order.order").create({
+          data: {
+            orderNumber,
+            orderStatus: "pending",
+            paymentStatus: "pending",
+            tax: original.tax,
+            shippingCost: original.shippingCost,
+            currency: original.currency,
+            items: newItems,
+            ...(newShippingAddress
+              ? { shippingAddress: newShippingAddress }
+              : {}),
+            ...(newBillingAddress ? { billingAddress: newBillingAddress } : {}),
+            retryCount,
+            originalOrder: rootOrderDocumentId,
+            notes: original.notes ?? null,
+            ...(original.voucher?.documentId
+              ? { voucher: original.voucher.documentId }
+              : {}),
+            ...(ctx.state.user ? { user: ctx.state.user.documentId } : {}),
+          },
+        });
+      } catch (err: any) {
+        await rollbackDecrements(strapi, decrementedItems);
+        return ctx.badRequest(err.message ?? "Order validation failed");
+      }
+
+      const order = (await strapi.documents("api::order.order").findOne({
+        documentId: createdOrder.documentId,
+        populate: ["items"],
+      })) as any;
+
+      let snapToken: string | null = null;
+      try {
+        const midtransService = strapi.service("api::midtrans.midtrans");
+
+        const userEntity = original.user;
+        const customerFirstName =
+          shippingAddress?.firstName ??
+          userEntity?.firstname ??
+          userEntity?.username ??
+          "Customer";
+
+        const customerEmail = shippingAddress?.email ?? userEntity?.email ?? "";
+        const customerPhone = shippingAddress?.phone ?? userEntity?.phone ?? "";
+
+        const productItems = (order.items ?? []).map((item: any) => ({
+          id:
+            item.productDocumentId +
+            (item.variantSku ? `-${item.variantSku}` : ""),
+          price: Number(item.unitPrice ?? 0),
+          quantity: Number(item.quantity ?? 0),
+          name: item.productName ?? "Product",
+        }));
+
+        const midtransItems = [...productItems];
+
+        if (Number(order.shippingCost ?? 0) > 0) {
+          midtransItems.push({
+            id: "SHIPPING",
+            price: Number(order.shippingCost ?? 0),
+            quantity: 1,
+            name: "Shipping Cost",
+          });
+        }
+
+        if (Number(order.tax ?? 0) > 0) {
+          midtransItems.push({
+            id: "TAX",
+            price: Number(order.tax ?? 0),
+            quantity: 1,
+            name: "Tax",
+          });
+        }
+
+        if (Number(order.discount ?? 0) > 0) {
+          midtransItems.push({
+            id: "DISCOUNT",
+            price: -Number(order.discount ?? 0),
+            quantity: 1,
+            name: "Discount",
+          });
+        }
+
+        const result = await midtransService.generateSnapToken({
+          orderId: order.orderNumber,
+          grossAmount: Number(order.totalAmount ?? 0),
+          customerDetails: {
+            firstName: customerFirstName,
+            email: customerEmail,
+            phone: customerPhone,
+          },
+          itemDetails: midtransItems,
+        });
+
+        snapToken = result.token;
+      } catch (err: any) {
+        strapi.log.error("Midtrans Snap token generation failed:", err);
+        // JANGAN panggil rollbackDecrements() di sini juga — men-set orderStatus/
+        // paymentStatus ke 'cancelled'/'failed' lewat .update() ini sudah memicu
+        // afterUpdate hook (lifecycles.ts) yang me-restore inventory berdasarkan
+        // order.items. Memanggil rollbackDecrements() (yang me-restore dari
+        // decrementedItems, item & qty yang SAMA) di atasnya akan menggandakan
+        // restore inventory (double-refund) — order lain jadi kelebihan stok.
+        await strapi.documents("api::order.order").update({
+          documentId: order.documentId,
+          data: { orderStatus: "cancelled", paymentStatus: "failed" },
+        });
+        return ctx.internalServerError(
+          "Payment gateway error: " + (err.message ?? "Unknown"),
+        );
+      }
+
+      const finalOrder = await strapi.documents("api::order.order").update({
+        documentId: order.documentId,
+        data: { midtransSnapToken: snapToken },
       });
 
-      const sanitizedEntity = await this.sanitizeOutput(entity, ctx);
+      const sanitizedEntity = await this.sanitizeOutput(finalOrder, ctx);
 
       return this.transformResponse(sanitizedEntity);
     },

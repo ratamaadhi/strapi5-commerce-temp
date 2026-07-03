@@ -1,6 +1,128 @@
+import { errors } from '@strapi/utils';
 import { incrementVariantInventory } from '../../services/inventory';
 
+const { ApplicationError } = errors;
+
+// Bentuk `data.voucher`/`data.user` di titik ini (dikonfirmasi lewat log runtime,
+// REST payload mengirim voucher sebagai bare documentId string): Strapi v5
+// menormalisasi manyToOne relation set-on-create menjadi `{ set: [{ id: <numeric id
+// internal> }] }` — BUKAN string documentId mentah, BUKAN bentuk `{ connect: [...] }`.
+// `where: { id: voucherId }` di bawah sudah benar apa adanya (id di sini memang id
+// numerik internal, bukan documentId) — TIDAK perlu diganti ke `documentId`.
+function extractRelationId(relation: unknown): number | string | undefined {
+  if (relation == null) return undefined;
+  if (typeof relation === 'number' || typeof relation === 'string') return relation;
+  if (typeof relation === 'object') {
+    const r = relation as Record<string, unknown>;
+    if (Array.isArray(r.connect) && r.connect[0]) {
+      const first = r.connect[0] as Record<string, unknown>;
+      return (first.id ?? first.documentId) as number | string;
+    }
+    if (Array.isArray(r.set) && r.set[0] !== undefined) {
+      const first = r.set[0];
+      if (typeof first === 'object' && first !== null) {
+        const f = first as Record<string, unknown>;
+        return (f.id ?? f.documentId) as number | string;
+      }
+      return first as number | string;
+    }
+  }
+  return undefined;
+}
+
 export default {
+  async beforeCreate(event: any) {
+    const { data } = event.params;
+
+    // subtotal & item.unitPrice/totalPrice SUDAH direcompute oleh Document Service
+    // Middleware di src/index.ts (Bagian A, Step 1) — middleware itu jalan SEBELUM
+    // Document Service membuat baris component `items`, sedangkan beforeCreate ini
+    // (Model Lifecycle, level Query Engine) jalan SETELAH itu, jadi `data.items` di
+    // sini sudah jadi stub component reference (tanpa productDocumentId/unitPrice) —
+    // TIDAK bisa direcompute dari titik ini. `data.subtotal` (field scalar, bukan
+    // component) tetap utuh dan sudah benar — dipakai langsung, tidak dihitung ulang.
+    const subtotal = Number(data.subtotal ?? 0);
+
+    // Validasi & hitung discount voucher — HANYA kalau data.voucher ada.
+    let discount = 0;
+
+    if (data.voucher) {
+      const voucherId = extractRelationId(data.voucher);
+      const voucher = await strapi.db.query('api::voucher.voucher').findOne({
+        where: { id: voucherId },
+      });
+
+      if (!voucher) {
+        throw new ApplicationError('Voucher tidak ditemukan');
+      }
+      if (!voucher.isActive) {
+        throw new ApplicationError('Voucher tidak aktif');
+      }
+
+      const now = new Date();
+      if (voucher.startDate && now < new Date(voucher.startDate)) {
+        throw new ApplicationError('Voucher belum berlaku');
+      }
+      if (voucher.endDate && now > new Date(voucher.endDate)) {
+        throw new ApplicationError('Voucher sudah kadaluarsa');
+      }
+
+      if (voucher.minPurchase && subtotal < voucher.minPurchase) {
+        throw new ApplicationError(
+          `Minimal belanja Rp${voucher.minPurchase} untuk memakai voucher ini`,
+        );
+      }
+
+      // Order yang cancelled/failed TIDAK menggerus kuota voucher — supaya
+      // gangguan Midtrans tidak menghabiskan kuota tanpa transaksi sukses.
+      const activeUsageFilter = {
+        voucher: voucherId,
+        orderStatus: { $ne: 'cancelled' },
+        paymentStatus: { $notIn: ['failed', 'cancelled'] },
+      };
+
+      if (voucher.usageLimit != null) {
+        const totalUsage = await strapi.db.query('api::order.order').count({
+          where: activeUsageFilter,
+        });
+        if (totalUsage >= voucher.usageLimit) {
+          throw new ApplicationError('Kuota voucher sudah habis');
+        }
+      }
+
+      const userId = extractRelationId(data.user);
+      if (voucher.usageLimitPerUser != null && userId) {
+        const userUsage = await strapi.db.query('api::order.order').count({
+          where: { ...activeUsageFilter, user: userId },
+        });
+        if (userUsage >= voucher.usageLimitPerUser) {
+          throw new ApplicationError('Voucher ini sudah pernah kamu pakai');
+        }
+      }
+
+      discount =
+        voucher.discountType === 'percentage'
+          ? subtotal * (Number(voucher.discountValue) / 100)
+          : Number(voucher.discountValue);
+
+      if (voucher.discountType === 'percentage' && voucher.maxDiscountAmount) {
+        discount = Math.min(discount, Number(voucher.maxDiscountAmount));
+      }
+      discount = Math.min(discount, subtotal);
+      discount = Math.round(discount);
+    }
+
+    data.discount = discount;
+
+    // totalAmount = subtotal & discount (server-trusted) + tax & shippingCost.
+    // CATATAN: tax & shippingCost MASIH sepenuhnya dipercaya dari client —
+    // tidak ada rate table/shipping config di codebase ini untuk menghitung
+    // ulang keduanya. Ini known gap, bukan sesuatu yang sudah aman.
+    const tax = Number(data.tax ?? 0);
+    const shippingCost = Number(data.shippingCost ?? 0);
+    data.totalAmount = subtotal + tax + shippingCost - discount;
+  },
+
   async afterCreate(event: any) {
     const { result } = event;
 

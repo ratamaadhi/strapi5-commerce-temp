@@ -108,6 +108,11 @@
       "target": "plugin::users-permissions.user",
       "inversedBy": "orders"
     },
+    "voucher": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::voucher.voucher"
+    },
     "items": {
       "type": "component",
       "component": "product.order-item",

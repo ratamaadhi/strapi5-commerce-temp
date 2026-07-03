@@ -1,9 +1,61 @@
 import type { Core } from '@strapi/strapi';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { errors } from '@strapi/utils';
+
+const { ApplicationError } = errors;
 
 export default {
   register({ strapi }: { strapi: Core.Strapi }) {
+    // Document Service Middleware: recompute order item pricing & subtotal from
+    // real product/variant prices BEFORE the Document Service creates the `items`
+    // component rows. This runs earlier than the order content-type's `beforeCreate`
+    // lifecycle (a Query Engine-level hook that only sees already-created component
+    // stubs) — see src/api/order/content-types/order/lifecycles.ts for the rest of
+    // the recompute (voucher/discount/totalAmount), which reads `data.subtotal` set
+    // here.
+    strapi.documents.use(async (context, next) => {
+      if (context.uid === 'api::order.order' && context.action === 'create') {
+        const data = context.params.data as any;
+        const items = Array.isArray(data.items) ? data.items : [];
+        let subtotal = 0;
+
+        for (const item of items) {
+          const product = (await strapi.documents('api::product.product').findOne({
+            documentId: item.productDocumentId,
+            status: 'published',
+            populate: ['variants'],
+          })) as any;
+
+          if (!product) {
+            throw new ApplicationError(`Produk tidak ditemukan: ${item.productDocumentId}`);
+          }
+
+          let unitPrice: number;
+          if (item.variantSku) {
+            const variant = (product.variants ?? []).find((v: any) => v.sku === item.variantSku);
+            if (!variant) {
+              throw new ApplicationError(`Varian tidak ditemukan: SKU ${item.variantSku}`);
+            }
+            unitPrice = Number(variant.price);
+          } else {
+            unitPrice = Number(product.price);
+          }
+
+          const quantity = Number(item.quantity) || 0;
+          const totalPrice = unitPrice * quantity;
+
+          item.unitPrice = unitPrice;
+          item.totalPrice = totalPrice;
+          subtotal += totalPrice;
+        }
+
+        data.subtotal = subtotal;
+      }
+
+      return next();
+    });
+
     strapi.server.routes([
       {
         method: 'GET',

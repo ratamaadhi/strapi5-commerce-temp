@@ -1,0 +1,63 @@
+{
+  "kind": "collectionType",
+  "collectionName": "vouchers",
+  "info": {
+    "singularName": "voucher",
+    "pluralName": "vouchers",
+    "displayName": "Voucher",
+    "description": "Kode diskon/voucher promo"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "code": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "discountType": {
+      "type": "enumeration",
+      "enum": ["percentage", "fixed"],
+      "required": true
+    },
+    "discountValue": {
+      "type": "decimal",
+      "required": true,
+      "min": 0
+    },
+    "maxDiscountAmount": {
+      "type": "decimal",
+      "min": 0
+    },
+    "minPurchase": {
+      "type": "decimal",
+      "min": 0,
+      "default": 0
+    },
+    "usageLimit": {
+      "type": "integer",
+      "min": 1
+    },
+    "usageLimitPerUser": {
+      "type": "integer",
+      "min": 1,
+      "default": 1
+    },
+    "startDate": {
+      "type": "datetime"
+    },
+    "endDate": {
+      "type": "datetime"
+    },
+    "isActive": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
+    "description": {
+      "type": "text"
+    }
+  }
+}

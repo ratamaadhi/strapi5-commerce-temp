@@ -613,6 +613,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       'manyToOne',
       'plugin::users-permissions.user'
     >;
+    voucher: Schema.Attribute.Relation<'manyToOne', 'api::voucher.voucher'>;
   };
 }
 
@@ -763,6 +764,83 @@ export interface ApiStoreSettingStoreSetting extends Struct.SingleTypeSchema {
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     whatsappNumber: Schema.Attribute.String;
+  };
+}
+
+export interface ApiVoucherVoucher extends Struct.CollectionTypeSchema {
+  collectionName: 'vouchers';
+  info: {
+    description: 'Kode diskon/voucher promo';
+    displayName: 'Voucher';
+    pluralName: 'vouchers';
+    singularName: 'voucher';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    code: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    discountType: Schema.Attribute.Enumeration<['percentage', 'fixed']> &
+      Schema.Attribute.Required;
+    discountValue: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    endDate: Schema.Attribute.DateTime;
+    isActive: Schema.Attribute.Boolean &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::voucher.voucher'
+    > &
+      Schema.Attribute.Private;
+    maxDiscountAmount: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    minPurchase: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    publishedAt: Schema.Attribute.DateTime;
+    startDate: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    usageLimit: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+    usageLimitPerUser: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<1>;
   };
 }
 
@@ -1323,6 +1401,7 @@ declare module '@strapi/strapi' {
       'api::product.product': ApiProductProduct;
       'api::review.review': ApiReviewReview;
       'api::store-setting.store-setting': ApiStoreSettingStoreSetting;
+      'api::voucher.voucher': ApiVoucherVoucher;
       'api::wishlist-item.wishlist-item': ApiWishlistItemWishlistItem;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
