@@ -133,3 +133,4 @@ src/extensions/documentation
 
 docs/superpowers/
 .playwright-mcp/
+.tokensave/
