@@ -1,0 +1,62 @@
+{
+  "kind": "collectionType",
+  "collectionName": "analytics_events",
+  "info": {
+    "singularName": "analytics-event",
+    "pluralName": "analytics-events",
+    "displayName": "analytics-event"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "eventName": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "session_start",
+        "product_view",
+        "add_to_cart",
+        "checkout_start",
+        "purchase"
+      ]
+    },
+    "sessionId": {
+      "type": "string",
+      "required": true
+    },
+    "session": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::analytics.analytics-session"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "productId": {
+      "type": "string"
+    },
+    "variantId": {
+      "type": "string"
+    },
+    "cartId": {
+      "type": "string"
+    },
+    "orderId": {
+      "type": "string"
+    },
+    "value": {
+      "type": "decimal"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "occurredAt": {
+      "type": "datetime",
+      "required": true
+    }
+  }
+}

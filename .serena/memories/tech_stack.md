@@ -1,0 +1,6 @@
+- Node 20+ / npm.
+- Strapi `5.47.0` across core + plugins.
+- TypeScript `^5`, `tsx` for tests.
+- React 18 deps exist for Strapi/admin compatibility; app code is backend-first.
+- Test harness uses Node test runner via `tsx --test`.
+- Build/dev scripts: `strapi build`, `strapi develop`, `strapi start`.

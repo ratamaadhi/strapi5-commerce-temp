@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "analytics_sessions",
+  "info": {
+    "singularName": "analytics-session",
+    "pluralName": "analytics-sessions",
+    "displayName": "analytics-session"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "sessionId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "firstSeenAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "lastSeenAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "landingPage": {
+      "type": "string"
+    },
+    "referrer": {
+      "type": "string"
+    },
+    "utmSource": {
+      "type": "string"
+    },
+    "utmMedium": {
+      "type": "string"
+    },
+    "utmCampaign": {
+      "type": "string"
+    },
+    "ipHash": {
+      "type": "string"
+    },
+    "userAgent": {
+      "type": "text"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

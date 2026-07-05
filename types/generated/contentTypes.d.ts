@@ -488,6 +488,184 @@ export interface ApiAddressAddress extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAnalyticsAnalyticsDailyAggregate
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'analytics_daily_aggregates';
+  info: {
+    displayName: 'analytics-daily-aggregate';
+    pluralName: 'analytics-daily-aggregates';
+    singularName: 'analytics-daily-aggregate';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    addToCarts: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    checkoutStarts: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    date: Schema.Attribute.Date & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::analytics.analytics-daily-aggregate'
+    > &
+      Schema.Attribute.Private;
+    productViews: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    publishedAt: Schema.Attribute.DateTime;
+    purchases: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    purchasingSessions: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    sessions: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    utmCampaign: Schema.Attribute.String;
+    utmMedium: Schema.Attribute.String;
+    utmSource: Schema.Attribute.String;
+  };
+}
+
+export interface ApiAnalyticsAnalyticsEvent
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'analytics_events';
+  info: {
+    displayName: 'analytics-event';
+    pluralName: 'analytics-events';
+    singularName: 'analytics-event';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    cartId: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    currency: Schema.Attribute.String;
+    eventName: Schema.Attribute.Enumeration<
+      [
+        'session_start',
+        'product_view',
+        'add_to_cart',
+        'checkout_start',
+        'purchase',
+      ]
+    > &
+      Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::analytics.analytics-event'
+    > &
+      Schema.Attribute.Private;
+    occurredAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    orderId: Schema.Attribute.String;
+    productId: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    session: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::analytics.analytics-session'
+    >;
+    sessionId: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    value: Schema.Attribute.Decimal;
+    variantId: Schema.Attribute.String;
+  };
+}
+
+export interface ApiAnalyticsAnalyticsSession
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'analytics_sessions';
+  info: {
+    displayName: 'analytics-session';
+    pluralName: 'analytics-sessions';
+    singularName: 'analytics-session';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    firstSeenAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    ipHash: Schema.Attribute.String;
+    landingPage: Schema.Attribute.String;
+    lastSeenAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::analytics.analytics-session'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    referrer: Schema.Attribute.String;
+    sessionId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    userAgent: Schema.Attribute.Text;
+    utmCampaign: Schema.Attribute.String;
+    utmMedium: Schema.Attribute.String;
+    utmSource: Schema.Attribute.String;
+  };
+}
+
 export interface ApiCartCart extends Struct.CollectionTypeSchema {
   collectionName: 'carts';
   info: {
@@ -581,7 +759,15 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     notes: Schema.Attribute.Text;
     orderNumber: Schema.Attribute.String & Schema.Attribute.Unique;
     orderStatus: Schema.Attribute.Enumeration<
-      ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']
+      [
+        'pending',
+        'processing',
+        'shipped',
+        'delivered',
+        'completed',
+        'cancelled',
+        'refunded',
+      ]
     >;
     originalOrder: Schema.Attribute.Relation<'manyToOne', 'api::order.order'>;
     paidAt: Schema.Attribute.DateTime;
@@ -597,6 +783,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
         number
       > &
       Schema.Attribute.DefaultTo<0>;
+    sessionId: Schema.Attribute.String;
     shippedAt: Schema.Attribute.DateTime;
     shippingAddress: Schema.Attribute.Component<'common.address', false>;
     shippingCost: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
@@ -1395,6 +1582,9 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::address.address': ApiAddressAddress;
+      'api::analytics.analytics-daily-aggregate': ApiAnalyticsAnalyticsDailyAggregate;
+      'api::analytics.analytics-event': ApiAnalyticsAnalyticsEvent;
+      'api::analytics.analytics-session': ApiAnalyticsAnalyticsSession;
       'api::cart.cart': ApiCartCart;
       'api::category.category': ApiCategoryCategory;
       'api::order.order': ApiOrderOrder;

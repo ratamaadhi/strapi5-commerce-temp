@@ -48,6 +48,10 @@ export default {
 
     if (data.voucher) {
       const voucherId = extractRelationId(data.voucher);
+      if (!voucherId) {
+        throw new ApplicationError('Voucher tidak ditemukan');
+      }
+
       const voucher = await strapi.db.query('api::voucher.voucher').findOne({
         where: { id: voucherId },
       });
@@ -129,7 +133,7 @@ export default {
     try {
       const order = await strapi.documents('api::order.order').findOne({
         documentId: result.documentId,
-        populate: ['user', 'items'],
+        populate: ['user', 'items', 'shippingAddress'],
       }) as any;
 
       const customerEmail = order.user?.email ?? null;
@@ -202,7 +206,7 @@ export default {
           <p style="font-size: 12px; color: #999;">This is an automated message. Please do not reply.</p>
         </div>`;
 
-      strapi.plugins['email'].services.email.send({
+      await strapi.plugins['email'].services.email.send({
         to: customerEmail,
         subject: `Order #${order.orderNumber} - Confirmed`,
         text: `Your order #${order.orderNumber} has been confirmed. Total: ${cur} ${fmt(order.totalAmount)}. Status: ${order.orderStatus}. Payment: ${order.paymentStatus}.`,
@@ -222,6 +226,21 @@ export default {
       const statusesToRestore = ['cancelled', 'refunded', 'failed'];
 
       const data = params?.data || {};
+      const becamePaid = data.paymentStatus && result.paymentStatus === 'paid';
+
+      if (becamePaid) {
+        try {
+          const paidOrder = await strapi.documents('api::order.order').findOne({
+            documentId: result.documentId,
+            populate: ['user'],
+          }) as any;
+
+          await strapi.service('api::analytics.analytics').createPurchaseFromOrder(paidOrder);
+        } catch (err: any) {
+          strapi.log.error('Failed to create analytics purchase event:', err);
+        }
+      }
+
       const paymentExplicitlyChanged = data.paymentStatus && statusesToRestore.includes(result.paymentStatus);
       const orderExplicitlyChanged = data.orderStatus && statusesToRestore.includes(result.orderStatus);
 

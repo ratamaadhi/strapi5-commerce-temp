@@ -1,0 +1,6 @@
+- `rtk npm run dev` / `rtk npm run develop`: local Strapi dev server.
+- `rtk npm run build`: Strapi production build.
+- `rtk npm run test:analytics`: analytics helper test slice.
+- `rtk npm run import` / `rtk npm run import:api`: product import scripts.
+- `rtk git status`, `rtk git diff`, `rtk git log`: token-filtered git wrappers.
+- Shell commands in this repo should be prefixed with `rtk` per project instructions.

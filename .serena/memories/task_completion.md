@@ -1,0 +1,4 @@
+- Verify backend changes with `rtk npm run build`.
+- Run targeted analytics tests with `rtk npm run test:analytics`.
+- Check repo state with `rtk git status --short`.
+- After onboarding/memory updates, project hygiene can be checked with `serena memories check` from repo root.

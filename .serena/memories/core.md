@@ -1,0 +1,6 @@
+- Strapi 5 commerce backend. Main code under `src/api/<domain>/...`.
+- Domain APIs: order, midtrans, category, wishlist-item, product, review, voucher, address, cart, store-setting, analytics.
+- Order API owns cross-cutting side effects via `src/api/order/content-types/order/lifecycles.ts` and custom services.
+- Analytics module lives under `src/api/analytics/` with schemas in `content-types/*` and helpers/service in `services/*`.
+- `docs/superpowers/` is gitignored; design/plan docs there won't show in `git status`.
+- Use `mem:tech_stack`, `mem:conventions`, `mem:suggested_commands`, `mem:task_completion` for deeper detail.

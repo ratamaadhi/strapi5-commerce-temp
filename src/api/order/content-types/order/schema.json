@@ -23,6 +23,7 @@
         "processing",
         "shipped",
         "delivered",
+        "completed",
         "cancelled",
         "refunded"
       ]
@@ -61,6 +62,9 @@
     "currency": {
       "type": "string",
       "default": "IDR"
+    },
+    "sessionId": {
+      "type": "string"
     },
     "midtransTransactionId": {
       "type": "string"

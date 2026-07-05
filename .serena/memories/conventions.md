@@ -1,0 +1,6 @@
+- Strapi custom APIs follow `src/api/<name>/{content-types,controllers,routes,services}`.
+- Lifecycle hooks are used for order side effects; existing `order/lifecycles.ts` already mixes inventory restoration and email confirmation.
+- TypeScript code often uses `any` at Strapi runtime boundaries for payloads/docs.
+- Relations may need document-id-aware handling; lifecycle code already normalizes relation payload shapes.
+- Keep helper logic pure in `services/utils.ts` when it supports tests.
+- Keep generated content ASCII unless file already uses non-ASCII.

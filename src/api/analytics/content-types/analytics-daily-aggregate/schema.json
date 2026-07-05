@@ -1,0 +1,58 @@
+{
+  "kind": "collectionType",
+  "collectionName": "analytics_daily_aggregates",
+  "info": {
+    "singularName": "analytics-daily-aggregate",
+    "pluralName": "analytics-daily-aggregates",
+    "displayName": "analytics-daily-aggregate"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "date": {
+      "type": "date",
+      "required": true
+    },
+    "utmSource": {
+      "type": "string"
+    },
+    "utmMedium": {
+      "type": "string"
+    },
+    "utmCampaign": {
+      "type": "string"
+    },
+    "sessions": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "productViews": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "addToCarts": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "checkoutStarts": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "purchases": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "purchasingSessions": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    }
+  }
+}
