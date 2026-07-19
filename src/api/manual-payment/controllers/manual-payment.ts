@@ -30,13 +30,13 @@ export default factories.createCoreController(
       const manualPayment = (order as any).manualPayment;
       if (!manualPayment) throw new ApplicationError('Order ini bukan pembayaran manual');
 
-      if (manualPayment.status === 'approved') {
-        throw new ApplicationError('Pembayaran sudah disetujui, tidak bisa unggah lagi');
+      if (!['awaiting_proof', 'rejected'].includes(manualPayment.status)) {
+        return ctx.badRequest('Cannot upload proof in current payment status');
       }
 
       // Retrieve uploaded file from multipart request
       const files = (ctx.request as any).files ?? {};
-      const file = files.image ?? files.file ?? null;
+      const file = files.image ?? null;
 
       const check = validateProofFile(file);
       if (!check.ok) throw new ApplicationError((check as { ok: false; error: string }).error);
