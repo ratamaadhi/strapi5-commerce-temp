@@ -16,7 +16,8 @@
     "import": "npx tsx scripts/import-products.ts",
     "import:api": "npx tsx scripts/import-products-api.ts",
     "seed:analytics": "npx tsx scripts/seed-analytics.ts",
-    "test:analytics": "tsx --test tests/analytics-utils.test.ts"
+    "test:analytics": "tsx --test tests/analytics-utils.test.ts",
+    "test:manual-payment": "tsx --test tests/manual-payment-logic.test.ts"
   },
   "dependencies": {
     "@strapi/plugin-cloud": "5.47.0",
