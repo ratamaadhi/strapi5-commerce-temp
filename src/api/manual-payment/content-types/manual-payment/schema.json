@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "manual_payments",
+  "info": {
+    "singularName": "manual-payment",
+    "pluralName": "manual-payments",
+    "displayName": "Manual Payment"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "status": {
+      "type": "enumeration",
+      "enum": ["awaiting_proof", "under_review", "approved", "rejected"],
+      "default": "awaiting_proof"
+    },
+    "expectedAmount": { "type": "decimal", "default": 0 },
+    "rejectionReason": { "type": "text" },
+    "reviewedAt": { "type": "datetime" },
+    "order": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::order.order",
+      "inversedBy": "manualPayment"
+    },
+    "proofs": {
+      "type": "component",
+      "component": "payment.payment-proof",
+      "repeatable": true
+    }
+  }
+}

@@ -63,6 +63,11 @@
       "type": "string",
       "default": "IDR"
     },
+    "paymentMethod": {
+      "type": "enumeration",
+      "enum": ["gateway", "manual_transfer"],
+      "default": "gateway"
+    },
     "sessionId": {
       "type": "string"
     },
@@ -116,6 +121,12 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::voucher.voucher"
+    },
+    "manualPayment": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::manual-payment.manual-payment",
+      "mappedBy": "order"
     },
     "items": {
       "type": "component",

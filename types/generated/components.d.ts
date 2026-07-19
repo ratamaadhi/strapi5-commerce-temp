@@ -21,6 +21,43 @@ export interface CommonAddress extends Struct.ComponentSchema {
   };
 }
 
+export interface PaymentBankAccount extends Struct.ComponentSchema {
+  collectionName: 'components_payment_bank_accounts';
+  info: {
+    displayName: 'bankAccount';
+    icon: 'wallet';
+  };
+  attributes: {
+    accountHolder: Schema.Attribute.String & Schema.Attribute.Required;
+    accountNumber: Schema.Attribute.String & Schema.Attribute.Required;
+    bankName: Schema.Attribute.String & Schema.Attribute.Required;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+  };
+}
+
+export interface PaymentPaymentProof extends Struct.ComponentSchema {
+  collectionName: 'components_payment_payment_proofs';
+  info: {
+    displayName: 'paymentProof';
+    icon: 'picture';
+  };
+  attributes: {
+    destinationAccountNumber: Schema.Attribute.String;
+    destinationBankName: Schema.Attribute.String;
+    image: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
+    proofStatus: Schema.Attribute.Enumeration<
+      ['pending', 'approved', 'rejected']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
+    referenceNote: Schema.Attribute.String;
+    senderBank: Schema.Attribute.String;
+    senderName: Schema.Attribute.String;
+    submittedAt: Schema.Attribute.DateTime;
+    transferAmount: Schema.Attribute.Decimal;
+    transferDate: Schema.Attribute.DateTime;
+  };
+}
+
 export interface ProductCartItem extends Struct.ComponentSchema {
   collectionName: 'components_product_cart_items';
   info: {
@@ -162,6 +199,8 @@ declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
       'common.address': CommonAddress;
+      'payment.bank-account': PaymentBankAccount;
+      'payment.payment-proof': PaymentPaymentProof;
       'product.cart-item': ProductCartItem;
       'product.dimensions': ProductDimensions;
       'product.order-item': ProductOrderItem;

@@ -729,6 +729,43 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiManualPaymentManualPayment
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'manual_payments';
+  info: {
+    displayName: 'Manual Payment';
+    pluralName: 'manual-payments';
+    singularName: 'manual-payment';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    expectedAmount: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::manual-payment.manual-payment'
+    > &
+      Schema.Attribute.Private;
+    order: Schema.Attribute.Relation<'oneToOne', 'api::order.order'>;
+    proofs: Schema.Attribute.Component<'payment.payment-proof', true>;
+    publishedAt: Schema.Attribute.DateTime;
+    rejectionReason: Schema.Attribute.Text;
+    reviewedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<
+      ['awaiting_proof', 'under_review', 'approved', 'rejected']
+    > &
+      Schema.Attribute.DefaultTo<'awaiting_proof'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
   collectionName: 'orders';
   info: {
@@ -752,6 +789,10 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::order.order'> &
       Schema.Attribute.Private;
+    manualPayment: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::manual-payment.manual-payment'
+    >;
     midtransPaymentType: Schema.Attribute.String;
     midtransSnapToken: Schema.Attribute.Text;
     midtransTransactionId: Schema.Attribute.String;
@@ -771,6 +812,10 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     >;
     originalOrder: Schema.Attribute.Relation<'manyToOne', 'api::order.order'>;
     paidAt: Schema.Attribute.DateTime;
+    paymentMethod: Schema.Attribute.Enumeration<
+      ['gateway', 'manual_transfer']
+    > &
+      Schema.Attribute.DefaultTo<'gateway'>;
     paymentStatus: Schema.Attribute.Enumeration<
       ['pending', 'paid', 'failed', 'refunded', 'cancelled']
     >;
@@ -1587,6 +1632,7 @@ declare module '@strapi/strapi' {
       'api::analytics.analytics-session': ApiAnalyticsAnalyticsSession;
       'api::cart.cart': ApiCartCart;
       'api::category.category': ApiCategoryCategory;
+      'api::manual-payment.manual-payment': ApiManualPaymentManualPayment;
       'api::order.order': ApiOrderOrder;
       'api::product.product': ApiProductProduct;
       'api::review.review': ApiReviewReview;
