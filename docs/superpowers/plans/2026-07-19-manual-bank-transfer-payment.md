@@ -606,28 +606,38 @@ At the very start of the existing `beforeCreate(event)` body (before the voucher
 
 (`ApplicationError` is already imported in this file.)
 
-- [ ] **Step 3: Add an `afterCreate` handler to auto-create the manual-payment**
+- [ ] **Step 3: Merge manual-payment creation into the EXISTING `afterCreate`**
 
-In the same `export default { ... }` object, add a new method (sibling to `beforeCreate`/`afterUpdate`):
+`order/lifecycles.ts` already has an `afterCreate(event)` that sends the confirmation email and contains an early `return` when the order has no user email (around line 142). Do NOT add a second `afterCreate` — insert the manual-payment creation at the **very top** of the existing `afterCreate` body, before the email logic and before that early return, so it runs regardless of email presence:
 
 ```ts
   async afterCreate(event: any) {
     const { result } = event;
-    if (result.paymentMethod !== 'manual_transfer') return;
 
-    try {
-      await strapi.documents('api::manual-payment.manual-payment').create({
-        data: {
-          status: 'awaiting_proof',
-          expectedAmount: Number(result.totalAmount) || 0,
-          order: result.documentId,
-        },
-      });
-    } catch (err: any) {
-      strapi.log.error('Failed to create manual-payment for order:', err);
+    // Manual bank transfer: create the linked manual-payment record.
+    if (result.paymentMethod === 'manual_transfer') {
+      try {
+        const existing = await strapi.documents('api::manual-payment.manual-payment').findFirst({
+          filters: { order: { documentId: result.documentId } },
+        });
+        if (!existing) {
+          await strapi.documents('api::manual-payment.manual-payment').create({
+            data: {
+              status: 'awaiting_proof',
+              expectedAmount: Number(result.totalAmount) || 0,
+              order: result.documentId,
+            },
+          });
+        }
+      } catch (err: any) {
+        strapi.log.error('Failed to create manual-payment for order:', err);
+      }
     }
-  },
+
+    // ---- existing email-confirmation logic continues unchanged below ----
 ```
+
+The rest of the existing `afterCreate` body (the `try { const order = ... }` email block) stays exactly as-is.
 
 - [ ] **Step 4: Verify manually**
 
@@ -870,8 +880,10 @@ git commit -m "feat(manual-payment): apply order side effects on approve/reject"
 - Modify: `config/cron-tasks.ts`
 
 **Interfaces:**
-- Consumes: `isManualPaymentExpired`, `MANUAL_PAYMENT_TTL_HOURS` from Task 4; inventory helpers from `order/services/inventory.ts`.
+- Consumes: `isManualPaymentExpired`, `MANUAL_PAYMENT_TTL_HOURS` from Task 4.
 - Produces: `expireStaleManualPayments(strapi): Promise<number>` (returns count cancelled); registered as hourly cron `manualPaymentExpiry`.
+
+**Critical — do NOT restore stock here.** `order/lifecycles.ts` `afterUpdate` already restores inventory whenever an order's `paymentStatus` transitions to `cancelled` (or `failed`/`refunded`). This runner only sets the order status; the existing lifecycle returns the stock. Restoring stock here as well would double-increment inventory.
 
 - [ ] **Step 1: Create the expiry runner**
 
@@ -879,12 +891,11 @@ git commit -m "feat(manual-payment): apply order side effects on approve/reject"
 
 ```ts
 import { isManualPaymentExpired } from './logic';
-import { incrementVariantInventory } from '../../order/services/inventory';
 
 export async function expireStaleManualPayments(strapi: any): Promise<number> {
   const candidates = await strapi.documents('api::manual-payment.manual-payment').findMany({
     filters: { status: { $in: ['awaiting_proof', 'under_review'] } },
-    populate: { order: { populate: { items: true } } },
+    populate: { order: true },
     limit: 500,
   });
 
@@ -899,20 +910,8 @@ export async function expireStaleManualPayments(strapi: any): Promise<number> {
     }
 
     try {
-      // Return stock.
-      for (const item of order.items ?? []) {
-        if (!item.productDocumentId) continue;
-        const qty = Number(item.quantity) || 0;
-        if (item.variantSku) {
-          await incrementVariantInventory(strapi, item.variantSku, item.productDocumentId, qty);
-        } else {
-          await strapi.db.connection.raw(
-            'UPDATE products SET inventory = inventory + :qty WHERE document_id = :documentId',
-            { documentId: item.productDocumentId, qty },
-          );
-        }
-      }
-
+      // Setting paymentStatus=cancelled triggers order.afterUpdate, which restores
+      // inventory. Do NOT restore stock here or it double-increments.
       await strapi.documents('api::order.order').update({
         documentId: order.documentId,
         data: { orderStatus: 'cancelled', paymentStatus: 'cancelled' },
