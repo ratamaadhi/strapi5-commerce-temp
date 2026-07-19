@@ -34,6 +34,10 @@ export default factories.createCoreController(
         return ctx.badRequest('Cannot upload proof in current payment status');
       }
 
+      if (order.paymentStatus === 'cancelled' || order.paymentStatus === 'failed') {
+        return ctx.badRequest('Order is no longer active');
+      }
+
       // Retrieve uploaded file from multipart request
       const files = (ctx.request as any).files ?? {};
       const file = files.image ?? null;
