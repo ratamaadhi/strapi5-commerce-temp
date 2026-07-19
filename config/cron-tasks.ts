@@ -1,4 +1,19 @@
 export default {
+  manualPaymentExpiry: {
+    task: async ({ strapi }) => {
+      const { expireStaleManualPayments } = await import(
+        '../src/api/manual-payment/services/expiry'
+      );
+      const count = await expireStaleManualPayments(strapi);
+      if (count > 0) {
+        strapi.log.info(`Expired ${count} unpaid manual-transfer order(s)`);
+      }
+    },
+    options: {
+      rule: '0 0 * * * *',
+      tz: 'UTC',
+    },
+  },
   analyticsDailyMaintenance: {
     task: async ({ strapi }) => {
       const yesterday = new Date();
