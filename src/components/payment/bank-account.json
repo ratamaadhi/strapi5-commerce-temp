@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_payment_bank_accounts",
+  "info": {
+    "displayName": "bankAccount",
+    "icon": "wallet"
+  },
+  "options": {},
+  "attributes": {
+    "bankName": { "type": "string", "required": true },
+    "accountNumber": { "type": "string", "required": true },
+    "accountHolder": { "type": "string", "required": true },
+    "isActive": { "type": "boolean", "default": true }
+  }
+}

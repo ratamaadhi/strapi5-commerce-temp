@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_payment_payment_proofs",
+  "info": {
+    "displayName": "paymentProof",
+    "icon": "picture"
+  },
+  "options": {},
+  "attributes": {
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["images"]
+    },
+    "senderName": { "type": "string" },
+    "senderBank": { "type": "string" },
+    "transferAmount": { "type": "decimal" },
+    "transferDate": { "type": "datetime" },
+    "referenceNote": { "type": "string" },
+    "destinationBankName": { "type": "string" },
+    "destinationAccountNumber": { "type": "string" },
+    "proofStatus": {
+      "type": "enumeration",
+      "enum": ["pending", "approved", "rejected"],
+      "default": "pending"
+    },
+    "submittedAt": { "type": "datetime" }
+  }
+}
