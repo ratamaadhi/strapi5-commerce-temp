@@ -982,15 +982,19 @@ export interface ApiStoreSettingStoreSetting extends Struct.SingleTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    bankAccounts: Schema.Attribute.Component<'payment.bank-account', true>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    gatewayEnabled: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::store-setting.store-setting'
     > &
       Schema.Attribute.Private;
+    manualTransferEnabled: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

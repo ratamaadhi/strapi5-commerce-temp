@@ -14,6 +14,13 @@
     "whatsappNumber": {
       "type": "string",
       "description": "Nomor WhatsApp admin dengan kode negara, tanpa '+'. Contoh: 628123456789"
+    },
+    "gatewayEnabled": { "type": "boolean", "default": true },
+    "manualTransferEnabled": { "type": "boolean", "default": false },
+    "bankAccounts": {
+      "type": "component",
+      "component": "payment.bank-account",
+      "repeatable": true
     }
   }
 }
