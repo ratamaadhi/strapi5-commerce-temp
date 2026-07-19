@@ -1,5 +1,6 @@
 import { errors } from '@strapi/utils';
 import { incrementVariantInventory } from '../../services/inventory';
+import { isPaymentMethodEnabled } from '../../../manual-payment/services/logic';
 
 const { ApplicationError } = errors;
 
@@ -33,6 +34,15 @@ function extractRelationId(relation: unknown): number | string | undefined {
 export default {
   async beforeCreate(event: any) {
     const { data } = event.params;
+
+    // Enforce payment method toggle from store-setting.
+    const method = (data.paymentMethod as 'gateway' | 'manual_transfer') || 'gateway';
+    const setting = await strapi
+      .documents('api::store-setting.store-setting')
+      .findFirst();
+    if (!isPaymentMethodEnabled(method, setting ?? {})) {
+      throw new ApplicationError('Metode pembayaran ini sedang tidak aktif');
+    }
 
     // subtotal & item.unitPrice/totalPrice SUDAH direcompute oleh Document Service
     // Middleware di src/index.ts (Bagian A, Step 1) — middleware itu jalan SEBELUM
@@ -130,6 +140,27 @@ export default {
   async afterCreate(event: any) {
     const { result } = event;
 
+    // Manual bank transfer: create the linked manual-payment record.
+    if (result.paymentMethod === 'manual_transfer') {
+      try {
+        const existing = await strapi.documents('api::manual-payment.manual-payment').findFirst({
+          filters: { order: { documentId: result.documentId } },
+        });
+        if (!existing) {
+          await strapi.documents('api::manual-payment.manual-payment').create({
+            data: {
+              status: 'awaiting_proof',
+              expectedAmount: Number(result.totalAmount) || 0,
+              order: result.documentId,
+            },
+          });
+        }
+      } catch (err: any) {
+        strapi.log.error('Failed to create manual-payment for order:', err);
+      }
+    }
+
+    // ---- existing email-confirmation logic continues below ----
     try {
       const order = await strapi.documents('api::order.order').findOne({
         documentId: result.documentId,
