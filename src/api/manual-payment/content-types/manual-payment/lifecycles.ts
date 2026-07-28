@@ -3,8 +3,8 @@ import { computeApprovalEffects, type ManualPaymentStatus } from '../../services
 export default {
   async afterUpdate(event: any) {
     const { result, params } = event;
-    // Only react when this update set `status`.
-    const newStatus = params?.data?.status as ManualPaymentStatus | undefined;
+    // Only react when this update set `reviewStatus`.
+    const newStatus = params?.data?.reviewStatus as ManualPaymentStatus | undefined;
     if (!newStatus || (newStatus !== 'approved' && newStatus !== 'rejected')) return;
 
     const strapi = (global as any).strapi;

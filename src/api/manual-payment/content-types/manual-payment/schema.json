@@ -9,7 +9,7 @@
   "options": { "draftAndPublish": false },
   "pluginOptions": {},
   "attributes": {
-    "status": {
+    "reviewStatus": {
       "type": "enumeration",
       "enum": ["awaiting_proof", "under_review", "approved", "rejected"],
       "default": "awaiting_proof"

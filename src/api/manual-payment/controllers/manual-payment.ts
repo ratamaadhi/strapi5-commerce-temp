@@ -30,7 +30,7 @@ export default factories.createCoreController(
       const manualPayment = (order as any).manualPayment;
       if (!manualPayment) throw new ApplicationError('Order ini bukan pembayaran manual');
 
-      if (!['awaiting_proof', 'rejected'].includes(manualPayment.status)) {
+      if (!['awaiting_proof', 'rejected'].includes(manualPayment.reviewStatus)) {
         return ctx.badRequest('Cannot upload proof in current payment status');
       }
 
@@ -39,8 +39,9 @@ export default factories.createCoreController(
       }
 
       // Retrieve uploaded file from multipart request
-      const files = (ctx.request as any).files ?? {};
-      const file = files.image ?? null;
+      const allFiles = (ctx.request as any).files ?? {};
+      const rawFile = allFiles.files ?? allFiles.image ?? null;
+      const file = Array.isArray(rawFile) ? rawFile[0] : rawFile;
 
       const check = validateProofFile(file);
       if (!check.ok) throw new ApplicationError((check as { ok: false; error: string }).error);
@@ -58,7 +59,18 @@ export default factories.createCoreController(
       if (!imageId) throw new ApplicationError('Gagal mengunggah file');
 
       // Collect metadata from request body
-      const body = (ctx.request as any).body ?? {};
+      // Strapi 5 multipart passes `data` field as a JSON string
+      const rawBody = (ctx.request as any).body ?? {};
+      let body: Record<string, unknown> = rawBody;
+      if (typeof rawBody.data === 'string') {
+        try {
+          body = JSON.parse(rawBody.data);
+        } catch {
+          body = {};
+        }
+      } else if (rawBody.data && typeof rawBody.data === 'object') {
+        body = rawBody.data as Record<string, unknown>;
+      }
 
       // Build existing proofs list (preserve existing entries)
       const existingProofs: any[] = (manualPayment.proofs ?? []).map((p: any) => ({
@@ -91,7 +103,7 @@ export default factories.createCoreController(
       const updated = await strapi.documents('api::manual-payment.manual-payment').update({
         documentId: manualPayment.documentId,
         data: {
-          status: 'under_review',
+          reviewStatus: 'under_review',
           proofs: existingProofs,
         },
         populate: { proofs: true },

@@ -45,6 +45,7 @@ export function isPaymentMethodEnabled(method: PaymentMethod, setting: StoreSett
 }
 
 interface ProofFileLike {
+  mimetype?: string;
   mime?: string;
   type?: string;
   size?: number;
@@ -54,7 +55,7 @@ export function validateProofFile(
   file: ProofFileLike | null | undefined,
 ): { ok: true } | { ok: false; error: string } {
   if (!file) return { ok: false, error: 'Bukti pembayaran wajib diunggah' };
-  const mime = file.mime ?? file.type ?? '';
+  const mime = file.mimetype ?? file.mime ?? file.type ?? '';
   if (!PROOF_ALLOWED_MIME.includes(mime)) {
     return { ok: false, error: 'Format file harus JPEG, PNG, atau WEBP' };
   }

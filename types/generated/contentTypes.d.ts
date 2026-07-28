@@ -756,7 +756,7 @@ export interface ApiManualPaymentManualPayment
     publishedAt: Schema.Attribute.DateTime;
     rejectionReason: Schema.Attribute.Text;
     reviewedAt: Schema.Attribute.DateTime;
-    status: Schema.Attribute.Enumeration<
+    reviewStatus: Schema.Attribute.Enumeration<
       ['awaiting_proof', 'under_review', 'approved', 'rejected']
     > &
       Schema.Attribute.DefaultTo<'awaiting_proof'>;

@@ -149,7 +149,7 @@ export default {
         if (!existing) {
           await strapi.documents('api::manual-payment.manual-payment').create({
             data: {
-              status: 'awaiting_proof',
+              reviewStatus: 'awaiting_proof',
               expectedAmount: Number(result.totalAmount) || 0,
               order: result.documentId,
             },

@@ -2,7 +2,7 @@ import { isManualPaymentExpired } from './logic';
 
 export async function expireStaleManualPayments(strapi: any): Promise<number> {
   const candidates = await strapi.documents('api::manual-payment.manual-payment').findMany({
-    filters: { status: { $in: ['awaiting_proof', 'under_review'] } },
+    filters: { reviewStatus: { $in: ['awaiting_proof', 'under_review'] } },
     populate: { order: true },
     limit: 500,
   });
@@ -13,13 +13,13 @@ export async function expireStaleManualPayments(strapi: any): Promise<number> {
   for (const mp of candidates) {
     const order = mp.order;
     if (!order) continue;
-    if (
-      !isManualPaymentExpired(
-        { createdAt: order.createdAt, paymentStatus: order.paymentStatus },
-        mp.status,
-        now
-      )
-    ) {
+      if (
+        !isManualPaymentExpired(
+          { createdAt: order.createdAt, paymentStatus: order.paymentStatus },
+          mp.reviewStatus,
+          now
+        )
+      ) {
       continue;
     }
 
@@ -33,7 +33,7 @@ export async function expireStaleManualPayments(strapi: any): Promise<number> {
       await strapi.documents('api::manual-payment.manual-payment').update({
         documentId: mp.documentId,
         data: {
-          status: 'rejected',
+          reviewStatus: 'rejected',
           rejectionReason: 'Payment expired: no proof received within 24 hours',
         },
       });
